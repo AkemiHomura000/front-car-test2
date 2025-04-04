@@ -7,7 +7,7 @@
 #include "zf_common_headfile.h"
 #include"all_init.h"
 #include "image.h"
-//1
+//12
 #define LED1 (P33_9) //Çý¶¯ºìÍâµÆ
 PID_Datatypedef sptr_l,sptr_r;
 void PWM_Init()
