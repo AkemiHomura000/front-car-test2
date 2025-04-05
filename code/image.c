@@ -12,41 +12,40 @@
 #include "image.h"
 #include "motor.h"
 
-
-//ºê¶¨Òå
+// ºê¶¨Òå
 #define white_pixel 255
 #define black_pixel 0
-#define standard_foot_roadwidth 170//¿ÉÄÜÊÜ¹âÏßµÈ¶şÖµ»¯Ó°Ïì
-#define bin_jump_num    1//Ìø¹ıµÄµãÊı
-#define border_max  image_w-2 //±ß½ç×î´óÖµ
-#define border_min  1   //±ß½ç×îĞ¡Öµ
-#define USE_num image_h*3   //¶¨ÒåÕÒµãµÄÊı×é³ÉÔ±¸öÊı°´ÀíËµ300¸öµãÄÜ·ÅÏÂ£¬µ«ÊÇÓĞĞ©ÌØÊâÇé¿öÈ·ÊµÄÑ¶¥£¬¶à¶¨ÒåÁËÒ»µã
-#define lost_width 15//´¦ÀíÇøÁ½²àµ¥±ßÑÓÕ¹ÁĞÊı£¬»ùÓÚµ×Ïß¿í£¨µ×Ïß¶ªÊ±¿ÉÄÜ´¦ÀíÇø²»ÍêÈ«°üº¬ÓÚÊÓÒ°£©
-#define hightest_least 15//×îÖÕ´¦ÀíÉÏ±ßºöÂÔĞĞÊıÖ®×îÉÙÖµ£¨Ñ°Ïß¿ÉÄÜ±ÈÆä¸ü´ó£©
+#define standard_foot_roadwidth 170 // ¿ÉÄÜÊÜ¹âÏßµÈ¶şÖµ»¯Ó°Ïì
+#define bin_jump_num 1              // Ìø¹ıµÄµãÊı
+#define border_max image_w - 2      // ±ß½ç×î´óÖµ
+#define border_min 1                // ±ß½ç×îĞ¡Öµ
+#define USE_num image_h * 3         // ¶¨ÒåÕÒµãµÄÊı×é³ÉÔ±¸öÊı°´ÀíËµ300¸öµãÄÜ·ÅÏÂ£¬µ«ÊÇÓĞĞ©ÌØÊâÇé¿öÈ·ÊµÄÑ¶¥£¬¶à¶¨ÒåÁËÒ»µã
+#define lost_width 15               // ´¦ÀíÇøÁ½²àµ¥±ßÑÓÕ¹ÁĞÊı£¬»ùÓÚµ×Ïß¿í£¨µ×Ïß¶ªÊ±¿ÉÄÜ´¦ÀíÇø²»ÍêÈ«°üº¬ÓÚÊÓÒ°£©
+#define hightest_least 15           // ×îÖÕ´¦ÀíÉÏ±ßºöÂÔĞĞÊıÖ®×îÉÙÖµ£¨Ñ°Ïß¿ÉÄÜ±ÈÆä¸ü´ó£©
 
-#define GrayScale 256//´ó½ò·¨ÖĞ
+#define GrayScale 256 // ´ó½ò·¨ÖĞ
 
 /*±äÁ¿ÉùÃ÷*/
 uint8 original_image[image_h][image_w];
-uint8 image_thereshold;//Í¼Ïñ·Ö¸îãĞÖµ
-uint8 bin_image[image_h][image_w];//Í¼ÏñÊı×é
-corner_inline* l_corner_point = NULL;
-corner_inline* r_corner_point = NULL;
+uint8 image_thereshold;            // Í¼Ïñ·Ö¸îãĞÖµ
+uint8 bin_image[image_h][image_w]; // Í¼ÏñÊı×é
+corner_inline *l_corner_point = NULL;
+corner_inline *r_corner_point = NULL;
 
-//´æ·ÅµãµÄx£¬y×ø±ê
-uint16 points_l[(uint16)USE_num][2] = { {  0 } };//×óÏß°ËÁÚÓò
-uint16 points_r[(uint16)USE_num][2] = { {  0 } };//ÓÒÏß°ËÁÚÓò
-uint16 dir_r[(uint16)USE_num] = { 0 };//ÓÃÀ´´æ´¢ÓÒ±ßÉú³¤·½Ïò
-uint16 dir_l[(uint16)USE_num] = { 0 };//ÓÃÀ´´æ´¢×ó±ßÉú³¤·½Ïò
-uint16 data_stastics_l = 0;//Í³¼Æ×ó±ßÕÒµ½µãµÄ¸öÊı
-uint16 data_stastics_r = 0;//Í³¼ÆÓÒ±ßÕÒµ½µãµÄ¸öÊı
-uint8 hightest = 0;//°ËÁÚÓòÑ°ÏßµÃ×î¸ßµã£¬ºóÓëhightest_least±È½ÏÈ¡´óÖµ
-uint16 trans_l[(uint16)USE_num][2] = { {  0 } };//×óÏß±ä»»
-uint16 trans_r[(uint16)USE_num][2] = { {  0 } };//ÓÒÏß
+// ´æ·ÅµãµÄx£¬y×ø±ê
+uint16 points_l[(uint16)USE_num][2] = {{0}}; // ×óÏß°ËÁÚÓò
+uint16 points_r[(uint16)USE_num][2] = {{0}}; // ÓÒÏß°ËÁÚÓò
+uint16 dir_r[(uint16)USE_num] = {0};         // ÓÃÀ´´æ´¢ÓÒ±ßÉú³¤·½Ïò
+uint16 dir_l[(uint16)USE_num] = {0};         // ÓÃÀ´´æ´¢×ó±ßÉú³¤·½Ïò
+uint16 data_stastics_l = 0;                  // Í³¼Æ×ó±ßÕÒµ½µãµÄ¸öÊı
+uint16 data_stastics_r = 0;                  // Í³¼ÆÓÒ±ßÕÒµ½µãµÄ¸öÊı
+uint8 hightest = 0;                          // °ËÁÚÓòÑ°ÏßµÃ×î¸ßµã£¬ºóÓëhightest_least±È½ÏÈ¡´óÖµ
+uint16 trans_l[(uint16)USE_num][2] = {{0}};  // ×óÏß±ä»»
+uint16 trans_r[(uint16)USE_num][2] = {{0}};  // ÓÒÏß
 
-uint8 l_border[image_h];//×óÏßÊı×é(ÄÚÈİ, ĞòºÅ)
-uint8 r_border[image_h];//ÓÒÏßÊı×é
-uint8 center_line[image_h];//ÖĞÏßÊı×é
+uint8 l_border[image_h];    // ×óÏßÊı×é(ÄÚÈİ, ĞòºÅ)
+uint8 r_border[image_h];    // ÓÒÏßÊı×é
+uint8 center_line[image_h]; // ÖĞÏßÊı×é
 uint8 cent_line_high;
 
 IfxCpu_mutexLock screen_mutex;
@@ -60,25 +59,29 @@ IfxCpu_mutexLock screen_mutex;
 ±¸    ×¢£º
 example£º  my_abs( x)£»
  */
-float Maxmin(float a,float min,float max)
+float Maxmin(float a, float min, float max)
 {
-    if (a<min)
-    a=min;
-    if(a>max)
-    a=max;
+    if (a < min)
+        a = min;
+    if (a > max)
+        a = max;
     return a;
 }
 
 int my_abs(int value)
 {
-if(value>=0) return value;
-else return -value;
+    if (value >= 0)
+        return value;
+    else
+        return -value;
 }
 
 int16 limit_a_b(int16 x, int16 a, int16 b)
 {
-    if(x<a) x = a;
-    if(x>b) x = b;
+    if (x < a)
+        x = a;
+    if (x > b)
+        x = b;
     return x;
 }
 
@@ -93,23 +96,26 @@ example£º  limit( x,  y)
  */
 int16 limit1(int16 x, int16 y)
 {
-    if (x > y)             return y;
-    else if (x < -y)       return -y;
-    else                return x;
+    if (x > y)
+        return y;
+    else if (x < -y)
+        return -y;
+    else
+        return x;
 }
 //------------------------------------------------------------------------------------------------------------------
 //  @brief      »ñµÃÒ»¸±»Ò¶ÈÍ¼Ïñ
 //  @since      v1.0
 //------------------------------------------------------------------------------------------------------------------
-void Get_image(uint8(*mt9v03x_image)[image_w])
+void Get_image(uint8 (*mt9v03x_image)[image_w])
 {
-#define use_num     1   //1¾ÍÊÇ²»Ñ¹Ëõ£¬2¾ÍÊÇÑ¹ËõÒ»±¶
+#define use_num 1 // 1¾ÍÊÇ²»Ñ¹Ëõ£¬2¾ÍÊÇÑ¹ËõÒ»±¶
     uint8 row = 0, line = 0;
-    for (uint8 i = 0; i < image_h; i += use_num)          //
+    for (uint8 i = 0; i < image_h; i += use_num) //
     {
-        for (uint8 j = 0; j <image_w; j += use_num)     //
+        for (uint8 j = 0; j < image_w; j += use_num) //
         {
-            original_image[row][line] = mt9v03x_image[i][j];//ÕâÀïµÄ²ÎÊıÌîĞ´ÄãµÄÉãÏñÍ·²É¼¯µ½µÄÍ¼Ïñ
+            original_image[row][line] = mt9v03x_image[i][j]; // ÕâÀïµÄ²ÎÊıÌîĞ´ÄãµÄÉãÏñÍ·²É¼¯µ½µÄÍ¼Ïñ
             line++;
         }
         line = 0;
@@ -122,10 +128,11 @@ void Get_image(uint8(*mt9v03x_image)[image_w])
 //------------------------------------------------------------------------------------------------------------------
 uint8 otsuThreshold(uint8 *image, uint16 col, uint16 row)
 {
-    uint16 Image_Width  = col;
+    uint16 Image_Width = col;
     uint16 Image_Height = row;
-    int X; uint16 Y;
-    uint8* data = image;
+    int X;
+    uint16 Y;
+    uint8 *data = image;
     int HistGram[GrayScale] = {0};
 
     uint32 Amount = 0;
@@ -134,60 +141,62 @@ uint8 otsuThreshold(uint8 *image, uint16 col, uint16 row)
     uint32 PixelIntegral = 0;
     int32 PixelIntegralFore = 0;
     int32 PixelFore = 0;
-    double OmegaBack=0, OmegaFore=0, MicroBack=0, MicroFore=0, SigmaB=0, Sigma=0; // Àà¼ä·½²î;
-    uint8 MinValue=0, MaxValue=0;
+    double OmegaBack = 0, OmegaFore = 0, MicroBack = 0, MicroFore = 0, SigmaB = 0, Sigma = 0; // Àà¼ä·½²î;
+    uint8 MinValue = 0, MaxValue = 0;
     uint8 Threshold = 0;
 
-    for (Y = 0; Y <Image_Height; Y++) //Y<Image_Height¸ÄÎªY =Image_Height£»ÒÔ±ã½øĞĞ ĞĞ¶şÖµ»¯
+    for (Y = 0; Y < Image_Height; Y++) // Y<Image_Height¸ÄÎªY =Image_Height£»ÒÔ±ã½øĞĞ ĞĞ¶şÖµ»¯
     {
-        //Y=Image_Height;
+        // Y=Image_Height;
         for (X = 0; X < Image_Width; X++)
         {
-            HistGram[(int)data[Y*Image_Width + X]]++; //Í³¼ÆÃ¿¸ö»Ò¶ÈÖµµÄ¸öÊıĞÅÏ¢
+            HistGram[(int)data[Y * Image_Width + X]]++; // Í³¼ÆÃ¿¸ö»Ò¶ÈÖµµÄ¸öÊıĞÅÏ¢
         }
     }
 
-    for (MinValue = 0; MinValue < 256 && HistGram[MinValue] == 0; MinValue++) ;        //»ñÈ¡×îĞ¡»Ò¶ÈµÄÖµ
-    for (MaxValue = 255; MaxValue > MinValue && HistGram[MinValue] == 0; MaxValue--) ; //»ñÈ¡×î´ó»Ò¶ÈµÄÖµ
+    for (MinValue = 0; MinValue < 256 && HistGram[MinValue] == 0; MinValue++)
+        ; // »ñÈ¡×îĞ¡»Ò¶ÈµÄÖµ
+    for (MaxValue = 255; MaxValue > MinValue && HistGram[MinValue] == 0; MaxValue--)
+        ; // »ñÈ¡×î´ó»Ò¶ÈµÄÖµ
 
     if (MaxValue == MinValue)
     {
-        return MaxValue;          // Í¼ÏñÖĞÖ»ÓĞÒ»¸öÑÕÉ«
+        return MaxValue; // Í¼ÏñÖĞÖ»ÓĞÒ»¸öÑÕÉ«
     }
     if (MinValue + 1 == MaxValue)
     {
-        return MinValue;      // Í¼ÏñÖĞÖ»ÓĞ¶ş¸öÑÕÉ«
+        return MinValue; // Í¼ÏñÖĞÖ»ÓĞ¶ş¸öÑÕÉ«
     }
 
     for (Y = MinValue; Y <= MaxValue; Y++)
     {
-        Amount += HistGram[Y];        //  ÏñËØ×ÜÊı
+        Amount += HistGram[Y]; //  ÏñËØ×ÜÊı
     }
 
     PixelIntegral = 0;
     for (Y = MinValue; Y <= MaxValue; Y++)
     {
-        PixelIntegral += HistGram[Y] * Y;//»Ò¶ÈÖµ×ÜÊı
+        PixelIntegral += HistGram[Y] * Y; // »Ò¶ÈÖµ×ÜÊı
     }
     SigmaB = -1;
     for (Y = MinValue; Y < MaxValue; Y++)
     {
-          PixelBack = PixelBack + HistGram[Y];    //Ç°¾°ÏñËØµãÊı
-          PixelFore = Amount - PixelBack;         //±³¾°ÏñËØµãÊı
-          OmegaBack = (double)PixelBack / Amount;//Ç°¾°ÏñËØ°Ù·Ö±È
-          OmegaFore = (double)PixelFore / Amount;//±³¾°ÏñËØ°Ù·Ö±È
-          PixelIntegralBack += HistGram[Y] * Y;  //Ç°¾°»Ò¶ÈÖµ
-          PixelIntegralFore = PixelIntegral - PixelIntegralBack;//±³¾°»Ò¶ÈÖµ
-          MicroBack = (double)PixelIntegralBack / PixelBack;//Ç°¾°»Ò¶È°Ù·Ö±È
-          MicroFore = (double)PixelIntegralFore / PixelFore;//±³¾°»Ò¶È°Ù·Ö±È
-          Sigma = OmegaBack * OmegaFore * (MicroBack - MicroFore) * (MicroBack - MicroFore);//g
-          if (Sigma > SigmaB)//±éÀú×î´óµÄÀà¼ä·½²îg
-          {
-              SigmaB = Sigma;
-              Threshold = (uint8)Y;
-          }
+        PixelBack = PixelBack + HistGram[Y];                                               // Ç°¾°ÏñËØµãÊı
+        PixelFore = Amount - PixelBack;                                                    // ±³¾°ÏñËØµãÊı
+        OmegaBack = (double)PixelBack / Amount;                                            // Ç°¾°ÏñËØ°Ù·Ö±È
+        OmegaFore = (double)PixelFore / Amount;                                            // ±³¾°ÏñËØ°Ù·Ö±È
+        PixelIntegralBack += HistGram[Y] * Y;                                              // Ç°¾°»Ò¶ÈÖµ
+        PixelIntegralFore = PixelIntegral - PixelIntegralBack;                             // ±³¾°»Ò¶ÈÖµ
+        MicroBack = (double)PixelIntegralBack / PixelBack;                                 // Ç°¾°»Ò¶È°Ù·Ö±È
+        MicroFore = (double)PixelIntegralFore / PixelFore;                                 // ±³¾°»Ò¶È°Ù·Ö±È
+        Sigma = OmegaBack * OmegaFore * (MicroBack - MicroFore) * (MicroBack - MicroFore); // g
+        if (Sigma > SigmaB)                                                                // ±éÀú×î´óµÄÀà¼ä·½²îg
+        {
+            SigmaB = Sigma;
+            Threshold = (uint8)Y;
+        }
     }
-   return Threshold;
+    return Threshold;
 }
 //------------------------------------------------------------------------------------------------------------------
 //  @brief      Í¼Ïñ¶şÖµ»¯£¬ÕâÀïÓÃµÄÊÇ´ó½ò·¨¶şÖµ»¯¡£
@@ -195,16 +204,18 @@ uint8 otsuThreshold(uint8 *image, uint16 col, uint16 row)
 //------------------------------------------------------------------------------------------------------------------
 void turn_to_bin(void)
 {
-  uint8 i,j;
- image_thereshold = otsuThreshold(original_image[0], image_w, image_h);///////////////¸ù¾İ·´¹âÇé¿öĞŞ¸Ä
-  for(i = 0;i<image_h;i++)
-  {
-      for(j = 0;j<image_w;j++)
-      {
-          if(original_image[i][j]>image_thereshold)bin_image[i][j] = white_pixel;
-          else bin_image[i][j] = black_pixel;
-      }
-  }
+    uint8 i, j;
+    image_thereshold = otsuThreshold(original_image[0], image_w, image_h); ///////////////¸ù¾İ·´¹âÇé¿öĞŞ¸Ä
+    for (i = 0; i < image_h; i++)
+    {
+        for (j = 0; j < image_w; j++)
+        {
+            if (original_image[i][j] > image_thereshold)
+                bin_image[i][j] = white_pixel;
+            else
+                bin_image[i][j] = black_pixel;
+        }
+    }
 }
 /*----------------------------------------------------------------------
 º¯ÊıÃû³Æ£ºvoid get_start_point(uint8 start_row)
@@ -215,26 +226,26 @@ void turn_to_bin(void)
 ±¸    ×¢£º
 example£º  get_start_point(image_h-2)
 -------------------------------------------------------------------------*/
-static uint8 start_point_l[2] = { 0 };//×ó±ßÆğµãµÄx£¬yÖµ
-static uint8 start_point_r[2] = { 0 };//ÓÒ±ßÆğµãµÄx£¬yÖµ
+static uint8 start_point_l[2] = {0}; // ×ó±ßÆğµãµÄx£¬yÖµ
+static uint8 start_point_r[2] = {0}; // ÓÒ±ßÆğµãµÄx£¬yÖµ
 uint8 get_start_point(uint8 start_row)
 {
-    uint8 i = 0,l_found = 0,r_found = 0;
-    //ÇåÁã
-    start_point_l[0] = 0;//x
-    start_point_l[1] = 0;//y
+    uint8 i = 0, l_found = 0, r_found = 0;
+    // ÇåÁã
+    start_point_l[0] = 0; // x
+    start_point_l[1] = 0; // y
 
-    start_point_r[0] = 0;//x
-    start_point_r[1] = 0;//y
+    start_point_r[0] = 0; // x
+    start_point_r[1] = 0; // y
 
-    //´ÓÖĞ¼äÍù×ó±ß£¬ÏÈÕÒÆğµã
+    // ´ÓÖĞ¼äÍù×ó±ß£¬ÏÈÕÒÆğµã
     for (i = image_w / 2; i > border_min; i--)
     {
-        start_point_l[0] = i;//x
-        start_point_l[1] = start_row;//y
+        start_point_l[0] = i;         // x
+        start_point_l[1] = start_row; // y
         if (bin_image[start_row][i] == 255 && bin_image[start_row][i - 1] == 0)
         {
-            //printf("ÕÒµ½×ó±ßÆğµãimage[%d][%d]\n", start_row,i);
+            // printf("ÕÒµ½×ó±ßÆğµãimage[%d][%d]\n", start_row,i);
             l_found = 1;
             break;
         }
@@ -242,18 +253,20 @@ uint8 get_start_point(uint8 start_row)
 
     for (i = image_w / 2; i < border_max; i++)
     {
-        start_point_r[0] = i;//x
-        start_point_r[1] = start_row;//y
+        start_point_r[0] = i;         // x
+        start_point_r[1] = start_row; // y
         if (bin_image[start_row][i] == 255 && bin_image[start_row][i + 1] == 0)
         {
-            //printf("ÕÒµ½ÓÒ±ßÆğµãimage[%d][%d]\n",start_row, i);
+            // printf("ÕÒµ½ÓÒ±ßÆğµãimage[%d][%d]\n",start_row, i);
             r_found = 1;
             break;
         }
     }
 
-    if(l_found&&r_found)return 1;
-    else {//Î´ÕÒµ½Æğµã
+    if (l_found && r_found)
+        return 1;
+    else
+    { // Î´ÕÒµ½Æğµã
         return 0;
     }
 }
@@ -281,175 +294,186 @@ example£º
     search_l_r((uint16)USE_num,image,&data_stastics_l, &data_stastics_r,start_point_l[0],
                 start_point_l[1], start_point_r[0], start_point_r[1],&hightest);
 --------------------------------------------------------------------------------------------*/
-void search_l_r(uint16 break_flag, uint8(*image)[image_w], uint16 *l_stastic, uint16 *r_stastic, uint8 l_start_x, uint8 l_start_y, uint8 r_start_x, uint8 r_start_y, uint8*hightest)
+void search_l_r(uint16 break_flag, uint8 (*image)[image_w], uint16 *l_stastic, uint16 *r_stastic, uint8 l_start_x, uint8 l_start_y, uint8 r_start_x, uint8 r_start_y, uint8 *hightest)
 {
 
     uint8 i = 0, j = 0;
-    //×ó±ß±äÁ¿
-    uint8 search_filds_l[8][2] = { {  0 } };
+    // ×ó±ß±äÁ¿
+    uint8 search_filds_l[8][2] = {{0}};
     uint8 index_l = 0;
-    uint8 temp_l[8][2] = { {  0 } };
-    uint8 center_point_l[2] = {  0 };
-    uint16 l_data_statics;//Í³¼Æ×ó±ß
-    //¶¨Òå°Ë¸öÁÚÓò
-    static int8 seeds_l[8][2] = { {0,  1},{-1,1},{-1,0},{-1,-1},{0,-1},{1,-1},{1,  0},{1, 1}, };
+    uint8 temp_l[8][2] = {{0}};
+    uint8 center_point_l[2] = {0};
+    uint16 l_data_statics; // Í³¼Æ×ó±ß
+    // ¶¨Òå°Ë¸öÁÚÓò
+    static int8 seeds_l[8][2] = {
+        {0, 1},
+        {-1, 1},
+        {-1, 0},
+        {-1, -1},
+        {0, -1},
+        {1, -1},
+        {1, 0},
+        {1, 1},
+    };
     //{-1,-1},{0,-1},{+1,-1},
     //{-1, 0},       {+1, 0},
     //{-1,+1},{0,+1},{+1,+1},
-    //Õâ¸öÊÇË³Ê±Õë
+    // Õâ¸öÊÇË³Ê±Õë
 
-    //ÓÒ±ß±äÁ¿
-    uint8 search_filds_r[8][2] = { {  0 } };
-    uint8 center_point_r[2] = { 0 };//ÖĞĞÄ×ø±êµã
-    uint8 index_r = 0;//Ë÷ÒıÏÂ±ê
-    uint8 temp_r[8][2] = { {  0 } };
-    uint16 r_data_statics;//Í³¼ÆÓÒ±ß
-    //¶¨Òå°Ë¸öÁÚÓò
-    static int8 seeds_r[8][2] = { {0,  1},{1,1},{1,0}, {1,-1},{0,-1},{-1,-1}, {-1,  0},{-1, 1}, };
+    // ÓÒ±ß±äÁ¿
+    uint8 search_filds_r[8][2] = {{0}};
+    uint8 center_point_r[2] = {0}; // ÖĞĞÄ×ø±êµã
+    uint8 index_r = 0;             // Ë÷ÒıÏÂ±ê
+    uint8 temp_r[8][2] = {{0}};
+    uint16 r_data_statics; // Í³¼ÆÓÒ±ß
+    // ¶¨Òå°Ë¸öÁÚÓò
+    static int8 seeds_r[8][2] = {
+        {0, 1},
+        {1, 1},
+        {1, 0},
+        {1, -1},
+        {0, -1},
+        {-1, -1},
+        {-1, 0},
+        {-1, 1},
+    };
     //{-1,-1},{0,-1},{+1,-1},
     //{-1, 0},       {+1, 0},
     //{-1,+1},{0,+1},{+1,+1},
-    //Õâ¸öÊÇÄæÊ±Õë
+    // Õâ¸öÊÇÄæÊ±Õë
 
-    l_data_statics = *l_stastic;//Í³¼ÆÕÒµ½ÁË¶àÉÙ¸öµã£¬·½±ãºóĞø°ÑµãÈ«²¿»­³öÀ´
-    r_data_statics = *r_stastic;//Í³¼ÆÕÒµ½ÁË¶àÉÙ¸öµã£¬·½±ãºóĞø°ÑµãÈ«²¿»­³öÀ´
+    l_data_statics = *l_stastic; // Í³¼ÆÕÒµ½ÁË¶àÉÙ¸öµã£¬·½±ãºóĞø°ÑµãÈ«²¿»­³öÀ´
+    r_data_statics = *r_stastic; // Í³¼ÆÕÒµ½ÁË¶àÉÙ¸öµã£¬·½±ãºóĞø°ÑµãÈ«²¿»­³öÀ´
 
-    //µÚÒ»´Î¸üĞÂ×ø±êµã  ½«ÕÒµ½µÄÆğµãÖµ´«½øÀ´
-    center_point_l[0] = l_start_x;//x
-    center_point_l[1] = l_start_y;//y
-    center_point_r[0] = r_start_x;//x
-    center_point_r[1] = r_start_y;//y
+    // µÚÒ»´Î¸üĞÂ×ø±êµã  ½«ÕÒµ½µÄÆğµãÖµ´«½øÀ´
+    center_point_l[0] = l_start_x; // x
+    center_point_l[1] = l_start_y; // y
+    center_point_r[0] = r_start_x; // x
+    center_point_r[1] = r_start_y; // y
 
-        //¿ªÆôÁÚÓòÑ­»·
+    // ¿ªÆôÁÚÓòÑ­»·
     while (break_flag--)
     {
-        //×ó±ß
-        for (i = 0; i < 8; i++)//´«µİ8F×ø±ê
+        // ×ó±ß
+        for (i = 0; i < 8; i++) // ´«µİ8F×ø±ê
         {
-            search_filds_l[i][0] = center_point_l[0] + seeds_l[i][0];//x
-            search_filds_l[i][1] = center_point_l[1] + seeds_l[i][1];//y
+            search_filds_l[i][0] = center_point_l[0] + seeds_l[i][0]; // x
+            search_filds_l[i][1] = center_point_l[1] + seeds_l[i][1]; // y
         }
-        //ÖĞĞÄ×ø±êµãÌî³äµ½ÒÑ¾­ÕÒµ½µÄµãÄÚ
-        points_l[l_data_statics][0] = center_point_l[0];//x
-        points_l[l_data_statics][1] = center_point_l[1];//y
-        l_data_statics++;//Ë÷Òı¼ÓÒ»
+        // ÖĞĞÄ×ø±êµãÌî³äµ½ÒÑ¾­ÕÒµ½µÄµãÄÚ
+        points_l[l_data_statics][0] = center_point_l[0]; // x
+        points_l[l_data_statics][1] = center_point_l[1]; // y
+        l_data_statics++;                                // Ë÷Òı¼ÓÒ»
 
-        //ÓÒ±ß
-        for (i = 0; i < 8; i++)//´«µİ8F×ø±ê
+        // ÓÒ±ß
+        for (i = 0; i < 8; i++) // ´«µİ8F×ø±ê
         {
-            search_filds_r[i][0] = center_point_r[0] + seeds_r[i][0];//x
-            search_filds_r[i][1] = center_point_r[1] + seeds_r[i][1];//y
+            search_filds_r[i][0] = center_point_r[0] + seeds_r[i][0]; // x
+            search_filds_r[i][1] = center_point_r[1] + seeds_r[i][1]; // y
         }
-        //ÖĞĞÄ×ø±êµãÌî³äµ½ÒÑ¾­ÕÒµ½µÄµãÄÚ
-        points_r[r_data_statics][0] = center_point_r[0];//x
-        points_r[r_data_statics][1] = center_point_r[1];//y
+        // ÖĞĞÄ×ø±êµãÌî³äµ½ÒÑ¾­ÕÒµ½µÄµãÄÚ
+        points_r[r_data_statics][0] = center_point_r[0]; // x
+        points_r[r_data_statics][1] = center_point_r[1]; // y
 
-        index_l = 0;//ÏÈÇåÁã£¬ºóÊ¹ÓÃ
+        index_l = 0; // ÏÈÇåÁã£¬ºóÊ¹ÓÃ
         for (i = 0; i < 8; i++)
         {
-            temp_l[i][0] = 0;//ÏÈÇåÁã£¬ºóÊ¹ÓÃ
-            temp_l[i][1] = 0;//ÏÈÇåÁã£¬ºóÊ¹ÓÃ
+            temp_l[i][0] = 0; // ÏÈÇåÁã£¬ºóÊ¹ÓÃ
+            temp_l[i][1] = 0; // ÏÈÇåÁã£¬ºóÊ¹ÓÃ
         }
 
-        //×ó±ßÅĞ¶Ï
+        // ×ó±ßÅĞ¶Ï
         for (i = 0; i < 8; i++)
         {
-            if (image[search_filds_l[i][1]][search_filds_l[i][0]] == 0
-                && image[search_filds_l[(i + 1) & 7][1]][search_filds_l[(i + 1) & 7][0]] == 255)
+            if (image[search_filds_l[i][1]][search_filds_l[i][0]] == 0 && image[search_filds_l[(i + 1) & 7][1]][search_filds_l[(i + 1) & 7][0]] == 255)
             {
                 temp_l[index_l][0] = search_filds_l[(i)][0];
                 temp_l[index_l][1] = search_filds_l[(i)][1];
                 index_l++;
-                dir_l[l_data_statics - 1] = (i);//¼ÇÂ¼Éú³¤·½Ïò
+                dir_l[l_data_statics - 1] = (i); // ¼ÇÂ¼Éú³¤·½Ïò
             }
 
             if (index_l)
             {
-                //¸üĞÂ×ø±êµã
-                center_point_l[0] = temp_l[0][0];//x
-                center_point_l[1] = temp_l[0][1];//y
+                // ¸üĞÂ×ø±êµã
+                center_point_l[0] = temp_l[0][0]; // x
+                center_point_l[1] = temp_l[0][1]; // y
                 for (j = 0; j < index_l; j++)
                 {
                     if (center_point_l[1] > temp_l[j][1])
                     {
-                        center_point_l[0] = temp_l[j][0];//x
-                        center_point_l[1] = temp_l[j][1];//y
+                        center_point_l[0] = temp_l[j][0]; // x
+                        center_point_l[1] = temp_l[j][1]; // y
                     }
                 }
             }
-
         }
-        if(l_data_statics>2&&r_data_statics>2){
-            if ((points_r[r_data_statics][0]== points_r[r_data_statics-1][0]&& points_r[r_data_statics][0] == points_r[r_data_statics - 2][0]
-                                                                                                                                                                                && points_r[r_data_statics][1] == points_r[r_data_statics - 1][1] && points_r[r_data_statics][1] == points_r[r_data_statics - 2][1])
-                                                                                                                                                                                ||(points_l[l_data_statics-1][0] == points_l[l_data_statics - 2][0] && points_l[l_data_statics-1][0] == points_l[l_data_statics - 3][0]
-                                                                                                                                                                                    && points_l[l_data_statics-1][1] == points_l[l_data_statics - 2][1] && points_l[l_data_statics-1][1] == points_l[l_data_statics - 3][1]))
-                                                                                                                                                                            {
-                                                                                                                                                                                //printf("Èı´Î½øÈëÍ¬Ò»¸öµã£¬ÍË³ö\n");
-                                                                                                                                                                                break;
-                                                                                                                                                                            }}
-
-        if (my_abs(points_r[r_data_statics][0] - points_l[l_data_statics - 1][0]) < 2
-            && my_abs(points_r[r_data_statics][1] - points_l[l_data_statics - 1][1] < 2)
-            )
+        if (l_data_statics > 2 && r_data_statics > 2)
         {
-            //printf("\n×óÓÒÏàÓöÍË³ö\n");
-            *hightest = (points_r[r_data_statics][1] + points_l[l_data_statics - 1][1]) >> 1;//È¡³ö×î¸ßµã
-            //printf("\nÔÚy=%d´¦ÍË³ö\n",*hightest);
+            if ((points_r[r_data_statics][0] == points_r[r_data_statics - 1][0] && points_r[r_data_statics][0] == points_r[r_data_statics - 2][0] && points_r[r_data_statics][1] == points_r[r_data_statics - 1][1] && points_r[r_data_statics][1] == points_r[r_data_statics - 2][1]) || (points_l[l_data_statics - 1][0] == points_l[l_data_statics - 2][0] && points_l[l_data_statics - 1][0] == points_l[l_data_statics - 3][0] && points_l[l_data_statics - 1][1] == points_l[l_data_statics - 2][1] && points_l[l_data_statics - 1][1] == points_l[l_data_statics - 3][1]))
+            {
+                // printf("Èı´Î½øÈëÍ¬Ò»¸öµã£¬ÍË³ö\n");
+                break;
+            }
+        }
+
+        if (my_abs(points_r[r_data_statics][0] - points_l[l_data_statics - 1][0]) < 2 && my_abs(points_r[r_data_statics][1] - points_l[l_data_statics - 1][1] < 2))
+        {
+            // printf("\n×óÓÒÏàÓöÍË³ö\n");
+            *hightest = (points_r[r_data_statics][1] + points_l[l_data_statics - 1][1]) >> 1; // È¡³ö×î¸ßµã
+            // printf("\nÔÚy=%d´¦ÍË³ö\n",*hightest);
             break;
         }
         if ((points_r[r_data_statics][1] < points_l[l_data_statics - 1][1]))
         {
-           // printf("\nÈç¹û×ó±ß±ÈÓÒ±ß¸ßÁË£¬×ó±ßµÈ´ıÓÒ±ß\n");
-            continue;//Èç¹û×ó±ß±ÈÓÒ±ß¸ßÁË£¬×ó±ßµÈ´ıÓÒ±ß
+            // printf("\nÈç¹û×ó±ß±ÈÓÒ±ß¸ßÁË£¬×ó±ßµÈ´ıÓÒ±ß\n");
+            continue; // Èç¹û×ó±ß±ÈÓÒ±ß¸ßÁË£¬×ó±ßµÈ´ıÓÒ±ß
         }
-        if (dir_l[l_data_statics - 1] == 7
-            && (points_r[r_data_statics][1] > points_l[l_data_statics - 1][1]))//×ó±ß±ÈÓÒ±ß¸ßÇÒÒÑ¾­ÏòÏÂÉú³¤ÁË
+        if (dir_l[l_data_statics - 1] == 7 && (points_r[r_data_statics][1] > points_l[l_data_statics - 1][1])) // ×ó±ß±ÈÓÒ±ß¸ßÇÒÒÑ¾­ÏòÏÂÉú³¤ÁË
         {
-            //printf("\n×ó±ß¿ªÊ¼ÏòÏÂÁË£¬µÈ´ıÓÒ±ß£¬µÈ´ıÖĞ... \n");
-            center_point_l[0] = points_l[l_data_statics - 1][0];//x
-            center_point_l[1] = points_l[l_data_statics - 1][1];//y
+            // printf("\n×ó±ß¿ªÊ¼ÏòÏÂÁË£¬µÈ´ıÓÒ±ß£¬µÈ´ıÖĞ... \n");
+            center_point_l[0] = points_l[l_data_statics - 1][0]; // x
+            center_point_l[1] = points_l[l_data_statics - 1][1]; // y
             l_data_statics--;
         }
-        r_data_statics++;//Ë÷Òı¼ÓÒ»
+        r_data_statics++; // Ë÷Òı¼ÓÒ»
 
-        index_r = 0;//ÏÈÇåÁã£¬ºóÊ¹ÓÃ
+        index_r = 0; // ÏÈÇåÁã£¬ºóÊ¹ÓÃ
         for (i = 0; i < 8; i++)
         {
-            temp_r[i][0] = 0;//ÏÈÇåÁã£¬ºóÊ¹ÓÃ
-            temp_r[i][1] = 0;//ÏÈÇåÁã£¬ºóÊ¹ÓÃ
+            temp_r[i][0] = 0; // ÏÈÇåÁã£¬ºóÊ¹ÓÃ
+            temp_r[i][1] = 0; // ÏÈÇåÁã£¬ºóÊ¹ÓÃ
         }
 
-        //ÓÒ±ßÅĞ¶Ï
+        // ÓÒ±ßÅĞ¶Ï
         for (i = 0; i < 8; i++)
         {
-            if (image[search_filds_r[i][1]][search_filds_r[i][0]] == 0
-                && image[search_filds_r[(i + 1) & 7][1]][search_filds_r[(i + 1) & 7][0]] == 255)
+            if (image[search_filds_r[i][1]][search_filds_r[i][0]] == 0 && image[search_filds_r[(i + 1) & 7][1]][search_filds_r[(i + 1) & 7][0]] == 255)
             {
                 temp_r[index_r][0] = search_filds_r[(i)][0];
                 temp_r[index_r][1] = search_filds_r[(i)][1];
-                index_r++;//Ë÷Òı¼ÓÒ»
-                dir_r[r_data_statics - 1] = (i);//¼ÇÂ¼Éú³¤·½Ïò
-                //printf("dir[%d]:%d\n", r_data_statics - 1, dir_r[r_data_statics - 1]);
+                index_r++;                       // Ë÷Òı¼ÓÒ»
+                dir_r[r_data_statics - 1] = (i); // ¼ÇÂ¼Éú³¤·½Ïò
+                // printf("dir[%d]:%d\n", r_data_statics - 1, dir_r[r_data_statics - 1]);
             }
             if (index_r)
             {
 
-                //¸üĞÂ×ø±êµã
-                center_point_r[0] = temp_r[0][0];//x
-                center_point_r[1] = temp_r[0][1];//y
+                // ¸üĞÂ×ø±êµã
+                center_point_r[0] = temp_r[0][0]; // x
+                center_point_r[1] = temp_r[0][1]; // y
                 for (j = 0; j < index_r; j++)
                 {
                     if (center_point_r[1] > temp_r[j][1])
                     {
-                        center_point_r[0] = temp_r[j][0];//x
-                        center_point_r[1] = temp_r[j][1];//y
+                        center_point_r[0] = temp_r[j][0]; // x
+                        center_point_r[1] = temp_r[j][1]; // y
                     }
                 }
             }
         }
     }
-    //È¡³öÑ­»·´ÎÊı
+    // È¡³öÑ­»·´ÎÊı
     *l_stastic = l_data_statics;
     *r_stastic = r_data_statics;
 }
@@ -468,24 +492,25 @@ void get_left(uint16 total_L)
     uint8 i = 0;
     uint16 j = 0;
     uint8 h = 0;
-    //³õÊ¼»¯
-    for (i = 0;i<image_h;i++)
+    // ³õÊ¼»¯
+    for (i = 0; i < image_h; i++)
     {
         l_border[i] = border_min;
     }
     h = image_h - 2;
-    //×ó±ß
+    // ×ó±ß
     for (j = 0; j < total_L; j++)
     {
-        if ((points_l[j][1] == h))// && ((h < l_corner_point->f_cp_y)||(h > l_corner_point->h_cp_y)))
+        if ((points_l[j][1] == h)) // && ((h < l_corner_point->f_cp_y)||(h > l_corner_point->h_cp_y)))
         {
-            l_border[h] = trans_l[j][0] + 1;//ÄÚÒ»ÏñËØ
+            l_border[h] = trans_l[j][0] + 1; // ÄÚÒ»ÏñËØ
         }
-        else continue; //Ã¿ĞĞÖ»È¡Ò»¸öµã£¬Ã»µ½ÏÂÒ»ĞĞ¾Í²»¼ÇÂ¼
+        else
+            continue; // Ã¿ĞĞÖ»È¡Ò»¸öµã£¬Ã»µ½ÏÂÒ»ĞĞ¾Í²»¼ÇÂ¼
         h--;
         if (h == 0)
         {
-            break;//µ½×îºóÒ»ĞĞÍË³ö
+            break; // µ½×îºóÒ»ĞĞÍË³ö
         }
     }
 }
@@ -506,47 +531,45 @@ void get_right(uint16 total_R)
     uint8 h = 0;
     for (i = 0; i < image_h; i++)
     {
-        r_border[i] = border_max;//ÓÒ±ßÏß³õÊ¼»¯·Åµ½×îÓÒ±ß£¬×ó±ßÏß·Åµ½×î×ó±ß£¬ÕâÑù°ËÁÚÓò±ÕºÏÇøÓòÍâµÄÖĞÏß¾Í»áÔÚÖĞ¼ä£¬²»»á¸ÉÈÅµÃµ½µÄÊı¾İ
+        r_border[i] = border_max; // ÓÒ±ßÏß³õÊ¼»¯·Åµ½×îÓÒ±ß£¬×ó±ßÏß·Åµ½×î×ó±ß£¬ÕâÑù°ËÁÚÓò±ÕºÏÇøÓòÍâµÄÖĞÏß¾Í»áÔÚÖĞ¼ä£¬²»»á¸ÉÈÅµÃµ½µÄÊı¾İ
     }
     h = image_h - 2;
-    //ÓÒ±ß
+    // ÓÒ±ß
     for (j = 0; j < total_R; j++)
     {
-        if ((points_r[j][1] == h))// && ((h < r_corner_point->f_cp_y)||(h > r_corner_point->h_cp_y)))
+        if ((points_r[j][1] == h)) // && ((h < r_corner_point->f_cp_y)||(h > r_corner_point->h_cp_y)))
         {
-            r_border[h] = trans_r[j][0] - 1;//ÍâÒ»ÏñËØ
+            r_border[h] = trans_r[j][0] - 1; // ÍâÒ»ÏñËØ
         }
-        else continue;//Ã¿ĞĞÖ»È¡Ò»¸öµã£¬Ã»µ½ÏÂÒ»ĞĞ¾Í²»¼ÇÂ¼
+        else
+            continue; // Ã¿ĞĞÖ»È¡Ò»¸öµã£¬Ã»µ½ÏÂÒ»ĞĞ¾Í²»¼ÇÂ¼
         h--;
-        if (h == 0)break;//µ½×îºóÒ»ĞĞÍË³ö
+        if (h == 0)
+            break; // µ½×îºóÒ»ĞĞÍË³ö
     }
 }
-//¶¨ÒåÅòÕÍºÍ¸¯Ê´µÄãĞÖµÇø¼ä
-#define threshold_max   255*5//´Ë²ÎÊı¿É¸ù¾İ×Ô¼ºµÄĞèÇóµ÷½Ú
-#define threshold_min   255*2//´Ë²ÎÊı¿É¸ù¾İ×Ô¼ºµÄĞèÇóµ÷½Ú
-void image_filter(uint8(*bin_image)[image_w])//ĞÎÌ¬Ñ§ÂË²¨£¬¼òµ¥À´Ëµ¾ÍÊÇÅòÕÍºÍ¸¯Ê´µÄË¼Ïë
+// ¶¨ÒåÅòÕÍºÍ¸¯Ê´µÄãĞÖµÇø¼ä
+#define threshold_max 255 * 5                  // ´Ë²ÎÊı¿É¸ù¾İ×Ô¼ºµÄĞèÇóµ÷½Ú
+#define threshold_min 255 * 2                  // ´Ë²ÎÊı¿É¸ù¾İ×Ô¼ºµÄĞèÇóµ÷½Ú
+void image_filter(uint8 (*bin_image)[image_w]) // ĞÎÌ¬Ñ§ÂË²¨£¬¼òµ¥À´Ëµ¾ÍÊÇÅòÕÍºÍ¸¯Ê´µÄË¼Ïë
 {
     uint32 num = 0;
     for (uint16 i = 1; i < image_h - 1; i++)
     {
         for (uint16 j = 1; j < (image_w - 1); j++)
         {
-            //Í³¼Æ°Ë¸ö·½ÏòµÄÏñËØÖµ
+            // Í³¼Æ°Ë¸ö·½ÏòµÄÏñËØÖµ
             num =
-                bin_image[i - 1][j - 1] + bin_image[i - 1][j] + bin_image[i - 1][j + 1]
-                + bin_image[i][j - 1] + bin_image[i][j + 1]
-                + bin_image[i + 1][j - 1] + bin_image[i + 1][j] + bin_image[i + 1][j + 1];
-
+                bin_image[i - 1][j - 1] + bin_image[i - 1][j] + bin_image[i - 1][j + 1] + bin_image[i][j - 1] + bin_image[i][j + 1] + bin_image[i + 1][j - 1] + bin_image[i + 1][j] + bin_image[i + 1][j + 1];
 
             if (num >= threshold_max && bin_image[i][j] == 0)
             {
 
-                bin_image[i][j] = white_pixel;//°×
-
+                bin_image[i][j] = white_pixel; // °×
             }
             if (num <= threshold_min && bin_image[i][j] == 255)
             {
-                bin_image[i][j] = black_pixel;//ºÚ
+                bin_image[i][j] = black_pixel; // ºÚ
             }
         }
     }
@@ -561,7 +584,7 @@ void image_filter(uint8(*bin_image)[image_w])//ĞÎÌ¬Ñ§ÂË²¨£¬¼òµ¥À´Ëµ¾ÍÊÇÅòÕÍºÍ¸¯Ê
 ±¸    ×¢£º
 example£º image_draw_rectan(bin_image);
 ----------------------------------------------------------*/
-void image_draw_rectan(uint8(*image)[image_w])
+void image_draw_rectan(uint8 (*image)[image_w])
 {
 
     uint8 i = 0;
@@ -571,14 +594,12 @@ void image_draw_rectan(uint8(*image)[image_w])
         image[i][1] = 0;
         image[i][image_w - 1] = 0;
         image[i][image_w - 2] = 0;
-
     }
     for (i = 0; i < image_w; i++)
     {
         image[0][i] = 0;
         image[1][i] = 0;
-        //image[image_h-1][i] = 0;
-
+        // image[image_h-1][i] = 0;
     }
 }
 
@@ -591,19 +612,19 @@ void image_draw_rectan(uint8(*image)[image_w])
 ±¸    ×¢£º
 example£º image_process();
 --------------------------------------------*/
-float error=0;
-float error_last=0;
-float err_kp=4;
-float err_kd=1.2;
-int d_speed=0;//¶¨Òå×óÓÒÁ½ÂÖµÄ²îËÙ
+float error = 0;
+float error_last = 0;
+float err_kp = 4;
+float err_kd = 1.2;
+int d_speed = 0; // ¶¨Òå×óÓÒÁ½ÂÖµÄ²îËÙ
 
 void error_calculate(void)
 {
-    float kp=0;//²ÉÓÃ¶¯Ì¬kp
+    float kp = 0; // ²ÉÓÃ¶¯Ì¬kp
     error = 0;
     d_speed = 0;
-    for(int i = image_h / 2; i  < image_h / 2 + 5; i ++)
-        error += (image_w / 2 - center_line[i]);//Ô¤Ãéµã¼ÆËãÔ­Ê¼Îó²î
+    for (int i = image_h / 2; i < image_h / 2 + 5; i++)
+        error += (image_w / 2 - center_line[i]); // Ô¤Ãéµã¼ÆËãÔ­Ê¼Îó²î
 
     error /= 5;
 
@@ -614,18 +635,19 @@ void error_calculate(void)
 }
 
 ////-------Äæ±ä»»±ßÏß------------------------------------------------------------------------------
-void EdgeLinePerspective(uint16* in_line, uint8 num, uint16* out_line)
+void EdgeLinePerspective(uint16 *in_line, uint8 num, uint16 *out_line)
 {
-    double change_inverse_Mat[3][3]={{-1.11048,-4.06186,186.592},{-0.149566,-3.88910,136.969},{-0.00236018,-0.0406898,1}};
-    for(uint8 count=0;count<num;count++)
+    double change_inverse_Mat[3][3] = {{-1.11048, -4.06186, 186.592}, {-0.149566, -3.88910, 136.969}, {-0.00236018, -0.0406898, 1}};
+    for (uint8 count = 0; count < num; count++)
     {
-        float i=in_line[count*2+0];float j=in_line[count*2+1];
-        uint16 solve_x = (int)((change_inverse_Mat[0][0]*i+change_inverse_Mat[0][1]*j+change_inverse_Mat[0][2])
-                   /(change_inverse_Mat[2][0]*i+change_inverse_Mat[2][1]*j+change_inverse_Mat[2][2]));
-        uint16 solve_y = (int)((change_inverse_Mat[1][0]*i+change_inverse_Mat[1][1]*j+change_inverse_Mat[1][2])
-                   /(change_inverse_Mat[2][0]*i+change_inverse_Mat[2][1]*j+change_inverse_Mat[2][2]));
-        if((solve_x<image_w)&&(solve_x>0)) out_line[count*2+0] = solve_x;
-        if((solve_y<image_h)&&(solve_y>0)) out_line[count*2+1] = solve_y;
+        float i = in_line[count * 2 + 0];
+        float j = in_line[count * 2 + 1];
+        uint16 solve_x = (int)((change_inverse_Mat[0][0] * i + change_inverse_Mat[0][1] * j + change_inverse_Mat[0][2]) / (change_inverse_Mat[2][0] * i + change_inverse_Mat[2][1] * j + change_inverse_Mat[2][2]));
+        uint16 solve_y = (int)((change_inverse_Mat[1][0] * i + change_inverse_Mat[1][1] * j + change_inverse_Mat[1][2]) / (change_inverse_Mat[2][0] * i + change_inverse_Mat[2][1] * j + change_inverse_Mat[2][2]));
+        if ((solve_x < image_w) && (solve_x > 0))
+            out_line[count * 2 + 0] = solve_x;
+        if ((solve_y < image_h) && (solve_y > 0))
+            out_line[count * 2 + 1] = solve_y;
     }
 }
 /*------------------------------------------------------------------------------------------
@@ -645,62 +667,60 @@ void image_process(void)
     Get_image(mt9v03x_image);
     turn_to_bin();
     /*ÌáÈ¡ÈüµÀ±ß½ç*/
-    image_filter(bin_image);//ÂË²¨
-    image_draw_rectan(bin_image);//Ô¤´¦Àí
-    //ÇåÁã
+    image_filter(bin_image);      // ÂË²¨
+    image_draw_rectan(bin_image); // Ô¤´¦Àí
+    // ÇåÁã
     data_stastics_l = 0;
     data_stastics_r = 0;
-    if (get_start_point(image_h - 2))//ÕÒµ½ÆğµãÁË£¬ÔÙÖ´ĞĞ°ËÁìÓò£¬Ã»ÕÒµ½¾ÍÒ»Ö±ÕÒ
+    if (get_start_point(image_h - 2)) // ÕÒµ½ÆğµãÁË£¬ÔÙÖ´ĞĞ°ËÁìÓò£¬Ã»ÕÒµ½¾ÍÒ»Ö±ÕÒ
     {
-//    printf("ÕıÔÚ¿ªÊ¼°ËÁìÓò\n");
+        //    printf("ÕıÔÚ¿ªÊ¼°ËÁìÓò\n");
         search_l_r((uint16)USE_num, bin_image, &data_stastics_l, &data_stastics_r, start_point_l[0], start_point_l[1], start_point_r[0], start_point_r[1], &hightest);
-        if(hightest<hightest_least) hightest=hightest_least;//×î¸ß±ßÅĞ¶¨
-//    printf("°ËÁÚÓòÒÑ½áÊø\n");
+        if (hightest < hightest_least)
+            hightest = hightest_least; // ×î¸ß±ßÅĞ¶¨
+        //    printf("°ËÁÚÓòÒÑ½áÊø\n");
         EdgeLinePerspective(&points_l, data_stastics_l, &trans_l);
         EdgeLinePerspective(&points_r, data_stastics_r, &trans_r);
-        //Ñ°ÕÒ½Çµã²¹È«±ßÏß
-//        l_corner_point = corner_4points(&points_l, data_stastics_l, 3);
-//        r_corner_point = corner_4points(&points_r, data_stastics_r, 3);
-// ´ÓÅÀÈ¡µÄ±ß½çÏßÄÚÌáÈ¡±ßÏß
+        // Ñ°ÕÒ½Çµã²¹È«±ßÏß
+        //        l_corner_point = corner_4points(&points_l, data_stastics_l, 3);
+        //        r_corner_point = corner_4points(&points_r, data_stastics_r, 3);
+        // ´ÓÅÀÈ¡µÄ±ß½çÏßÄÚÌáÈ¡±ßÏß
         get_left(data_stastics_l);
         get_right(data_stastics_r);
-// ÇóÖĞÏß
+        // ÇóÖĞÏß
         uint8 center_ipt = 0;
-        float itplt[3]={0}, d1ipt[2]={0}, d2ipt=0;//[3]={0}, d3ipt[2]={0}, d4ipt=0;
+        float itplt[3] = {0}, d1ipt[2] = {0}, d2ipt = 0; //[3]={0}, d3ipt[2]={0}, d4ipt=0;
         float stp = 0, ipt_x0 = 0;
-        for (int i = image_h-lowest; i > hightest; i--)
+        for (int i = image_h - lowest; i > hightest; i--)
         {
-//            if((l_border[i]>l_border[image_h-2]-lost_width) && (r_border[i]<r_border[image_h-2]+lost_width))//ÎŞ¶ªÏß
-            if((l_border[i]>5) && (r_border[i]<180))
+            //            if((l_border[i]>l_border[image_h-2]-lost_width) && (r_border[i]<r_border[image_h-2]+lost_width))//ÎŞ¶ªÏß
+            if ((l_border[i] > 5) && (r_border[i] < 180))
             {
-                center_line[i] = (l_border[i] + r_border[i]) >> 1;//¾ù·ÖÇóÖĞÏß
+                center_line[i] = (l_border[i] + r_border[i]) >> 1; // ¾ù·ÖÇóÖĞÏß
             }
         }
     }
-//ÔªËØ¶Ô×óÓÒ±ßÏßµÄ´¦ÀíÈ«²¿·ÅÔÚÕâÀï
-//ÅĞ±ğÊÇ·ñÓĞ²í¿Ú£¨Ê®×Ö»ò»·£©
-    foot_roadwidth = r_border[image_h-2] - l_border[image_h-2];
+    // ÔªËØ¶Ô×óÓÒ±ßÏßµÄ´¦ÀíÈ«²¿·ÅÔÚÕâÀï
+    // ÅĞ±ğÊÇ·ñÓĞ²í¿Ú£¨Ê®×Ö»ò»·£©
+    foot_roadwidth = r_border[image_h - 2] - l_border[image_h - 2];
     head_roadwidth = r_border[hightest] - l_border[hightest];
-    if(foot_roadwidth > standard_foot_roadwidth && xflg_now < 6) xflg_now++;
-    else if(xflg_now > 0) xflg_now--;
-    if(xflg_now > 3)//xflg_now>3¼´Èı´ÎÁ¬Ğø³¬±ê£¬±íÃ÷µ×Ïß¶ªÏß
+    if (foot_roadwidth > standard_foot_roadwidth && xflg_now < 6)
+        xflg_now++;
+    else if (xflg_now > 0)
+        xflg_now--;
+    if (xflg_now > 3) // xflg_now>3¼´Èı´ÎÁ¬Ğø³¬±ê£¬±íÃ÷µ×Ïß¶ªÏß
     {
-    //ÈçÖ»ÄÜ²¶Ò»¸öÇ°½ÇÔòÎª»·£¬¿É²¶×óÓÒÁ½½ÇÎªÊ®×Ö£¬ÎŞ½ÇÔòÎª´óÍä¹ı¶È
+        // ÈçÖ»ÄÜ²¶Ò»¸öÇ°½ÇÔòÎª»·£¬¿É²¶×óÓÒÁ½½ÇÎªÊ®×Ö£¬ÎŞ½ÇÔòÎª´óÍä¹ı¶È
     }
     else
     {
-    //µ×±ßÎ´¶ªÏß£¬·Ö±æÇ°·½ÊÇ·ñ³öÏÖ¶ªÏß
+        // µ×±ßÎ´¶ªÏß£¬·Ö±æÇ°·½ÊÇ·ñ³öÏÖ¶ªÏß
 
-    //Ç°·½ÎŞ¶ªÏß£¬¿ÉÄÜÎªÖ±µÀ»òĞ¡Íä
-
+        // Ç°·½ÎŞ¶ªÏß£¬¿ÉÄÜÎªÖ±µÀ»òĞ¡Íä
     }
 
     error_calculate();
 }
-
-
-
-
 
 /*
 
@@ -719,5 +739,3 @@ void image_process(void)
 yÖµ×î´ó*******************************************(188.120)
 
 */
-
-

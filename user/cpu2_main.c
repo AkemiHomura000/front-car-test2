@@ -46,18 +46,18 @@
 // **************************** 代码区域 ****************************
 void show_star(uint8 x, uint8 y)
 {
-//    if((x>1)&&(x<ips200_width_max)&&(y>1)&&(y<ips200_height_max))
-//    ips200_draw_point((uint16)x, (uint16)y, uesr_GREEN);//角点曲率半径小（包括边缘断线处+岔道处）
-//    ips200_draw_point((uint16)x+1, (uint16)y, uesr_GREEN);
-//    ips200_draw_point((uint16)x, (uint16)y+1, uesr_GREEN);
-//    ips200_draw_point((uint16)x-1, (uint16)y, uesr_GREEN);
-//    ips200_draw_point((uint16)x, (uint16)y-1, uesr_GREEN);
+   if((x>1)&&(x<ips200_width_max)&&(y>1)&&(y<ips200_height_max))
+   ips200_draw_point((uint16)x, (uint16)y, uesr_GREEN);//角点曲率半径小（包括边缘断线处+岔道处）
+   ips200_draw_point((uint16)x+1, (uint16)y, uesr_GREEN);
+   ips200_draw_point((uint16)x, (uint16)y+1, uesr_GREEN);
+   ips200_draw_point((uint16)x-1, (uint16)y, uesr_GREEN);
+   ips200_draw_point((uint16)x, (uint16)y-1, uesr_GREEN);
 }
 void screen_show(void)
 {
     //此处展示屏幕
-//    ips200_show_gray_image(0+image_xmove, 0, original_image[0], image_w, image_h, image_w, image_h, 0);
-//    ips200_show_gray_image(0+image_xmove, 125, bin_image[0], image_w, image_h, image_w, image_h, 0);
+   ips200_show_gray_image(0+image_xmove, 0, original_image[0], image_w, image_h, image_w, image_h, 0);
+   ips200_show_gray_image(0+image_xmove, 125, bin_image[0], image_w, image_h, image_w, image_h, 0);
 //
 //    ips200_show_string(0, 180, "ifstop:");
 //    ips200_show_int(60,180,stop,3);
@@ -113,7 +113,7 @@ void core2_main(void)//负责屏幕显示
         // 此处编写需要循环执行的代码
         if (IfxCpu_acquireMutex(&screen_mutex))
         {
-//            screen_show();
+           screen_show();
             IfxCpu_releaseMutex(&screen_mutex);
         }
         system_delay_ms(50);

@@ -508,6 +508,10 @@ void ips200_set_color (const uint16 pen, const uint16 bgcolor)
 //-------------------------------------------------------------------------------------------------------------------
 void ips200_draw_point (uint16 x, uint16 y, const uint16 color)
 {
+    if(x>=ips200_width_max||y>=ips200_height_max)
+    {
+        return;
+    }
     // 如果程序在输出了断言信息 并且提示出错位置在这里
     // 那么一般是屏幕显示的时候超过屏幕分辨率范围了
     zf_assert(x < ips200_width_max);
