@@ -9,9 +9,11 @@
 #define CODE_ALL_INIT_H_
 #include "motor.h"
 //--------datatype declaration---------
+#define LED1 (P33_9) //Çý¶¯ºìÍâµÆ
 
 //---------function declaration----------
 extern void all_init(void);
+
 //---------data declaration------------
 extern PID_Datatypedef sptr_l,sptr_r;
 

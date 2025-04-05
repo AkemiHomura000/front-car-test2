@@ -379,14 +379,16 @@ void search_l_r(uint16 break_flag, uint8(*image)[image_w], uint16 *l_stastic, ui
             }
 
         }
-        if ((points_r[r_data_statics][0]== points_r[r_data_statics-1][0]&& points_r[r_data_statics][0] == points_r[r_data_statics - 2][0]
-            && points_r[r_data_statics][1] == points_r[r_data_statics - 1][1] && points_r[r_data_statics][1] == points_r[r_data_statics - 2][1])
-            ||(points_l[l_data_statics-1][0] == points_l[l_data_statics - 2][0] && points_l[l_data_statics-1][0] == points_l[l_data_statics - 3][0]
-                && points_l[l_data_statics-1][1] == points_l[l_data_statics - 2][1] && points_l[l_data_statics-1][1] == points_l[l_data_statics - 3][1]))
-        {
-            //printf("三次进入同一个点，退出\n");
-            break;
-        }
+        if(l_data_statics>2&&r_data_statics>2){
+            if ((points_r[r_data_statics][0]== points_r[r_data_statics-1][0]&& points_r[r_data_statics][0] == points_r[r_data_statics - 2][0]
+                                                                                                                                                                                && points_r[r_data_statics][1] == points_r[r_data_statics - 1][1] && points_r[r_data_statics][1] == points_r[r_data_statics - 2][1])
+                                                                                                                                                                                ||(points_l[l_data_statics-1][0] == points_l[l_data_statics - 2][0] && points_l[l_data_statics-1][0] == points_l[l_data_statics - 3][0]
+                                                                                                                                                                                    && points_l[l_data_statics-1][1] == points_l[l_data_statics - 2][1] && points_l[l_data_statics-1][1] == points_l[l_data_statics - 3][1]))
+                                                                                                                                                                            {
+                                                                                                                                                                                //printf("三次进入同一个点，退出\n");
+                                                                                                                                                                                break;
+                                                                                                                                                                            }}
+
         if (my_abs(points_r[r_data_statics][0] - points_l[l_data_statics - 1][0]) < 2
             && my_abs(points_r[r_data_statics][1] - points_l[l_data_statics - 1][1] < 2)
             )
@@ -591,8 +593,8 @@ example： image_process();
 --------------------------------------------*/
 float error=0;
 float error_last=0;
-float err_kp=0.0;
-float err_kd=0.0;
+float err_kp=4;
+float err_kd=1.2;
 int d_speed=0;//定义左右两轮的差速
 
 void error_calculate(void)
@@ -600,18 +602,17 @@ void error_calculate(void)
     float kp=0;//采用动态kp
     error = 0;
     d_speed = 0;
-    for(int i = image_h - lowest; i > cent_line_high; i--)
-    {
+    for(int i = image_h / 2; i  < image_h / 2 + 5; i ++)
         error += (image_w / 2 - center_line[i]);//预瞄点计算原始误差
-    }
-    float i = image_h - lowest - cent_line_high;
-    if(i)
-        error /= (image_h - lowest - cent_line_high);//<0需右转lspeed>rspeederror * error +
-   kp = Maxmin(err_kp, 0, 2.5);
-//   ips200_show_float(80, 240, kp, 3, 3);
-   d_speed = Maxmin((kp * error + err_kd * (error - error_last)), -200, 200);
-   error_last = error;
+
+    error /= 5;
+
+    kp = Maxmin(0.00025 * error * error + err_kp, 0, 2.5);
+
+    d_speed = Maxmin((kp * error + err_kd * (error - error_last)), -150, 150);
+    error_last = error;
 }
+
 ////-------逆变换边线------------------------------------------------------------------------------
 void EdgeLinePerspective(uint16* in_line, uint8 num, uint16* out_line)
 {

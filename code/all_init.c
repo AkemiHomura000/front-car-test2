@@ -20,9 +20,9 @@ void PWM_Init()
 //    pwm_init (ATOM0_CH1_P21_3, 17*1000, 0);//Õý×ªpwm
     PID_Init(&sptr_l);
     PID_Init(&sptr_r);
-    sptr_l.P = 26.5;
+    sptr_l.P = 45;
     sptr_l.I = 0.02;
-    sptr_l.D = 0.2;
+    sptr_l.D = 0.5;
 
     sptr_r.P = sptr_l.P;
     sptr_r.I = sptr_l.I;

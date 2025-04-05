@@ -16,37 +16,29 @@ int16 pwm_r = dead_least_r;             // 右电机PWM值
 int16 pwm_l = dead_least_l;             // 左电机PWM值
 int32 speed_r;  // 右电机速度
 int32 speed_l;  // 左电机速度
-int32 target_speed = 0;
+int32 target_speed = 50;
 uint8 stop = 1;
 
 // 电机控制函数
 void motor_control() {
-    if(!stop)
+    if(1)
     {
         int16 pwm_r_add = 0;  // 右电机PWM增量
         int16 pwm_l_add = 0;  // 左电机PWM增量
-        //    int level = 1;
+            int level = 1;
 
-        //   if ((error >= 150 && error <= 300) || (error <= -150 && error >= -300)){
-        //        target_speed_r = 30;
-        //        target_speed_l = 35;
-        //        level = 1.1;
-        //    }
-        //   else
-        //    if (error >= 300 || error <= -300){
-        //            target_speed_r = 60;
-        //            target_speed_l = 60;
-        //            level = 1.15;
-        //        }
-        //    else{
-        //        target_speed_r = 90;
-        //        target_speed_l = 90;
-        //        level = 1;
-        //    }
+            if (error >= 60 || error <= -60){
+                    target_speed = 700;
+                    level = 1.15;
+                }
+            else{
+                target_speed = 900;
+                level = 1;
+            }
 
             // 根据速度误差调整PWM值//level * 0.13
-        pwm_l_add = MotorPID_Output(&sptr_l, speed_l, target_speed - d_speed);
-        pwm_r_add = MotorPID_Output(&sptr_r, speed_r, target_speed + d_speed);
+        pwm_l_add = MotorPID_Output(&sptr_l, speed_l, 0.13 * level * target_speed - d_speed);
+        pwm_r_add = MotorPID_Output(&sptr_r, speed_r, 0.13 * level * target_speed + d_speed);
 
             // 更新PWM值
         pwm_l += pwm_l_add;
