@@ -57,7 +57,7 @@ void screen_show(void)
 {
     // 此处展示屏幕
     ips200_show_gray_image(0 + image_xmove, 0, original_image[0], image_w, image_h, image_w, image_h, 0);
-    ips200_show_gray_image(0 + image_xmove, 125, bin_image[0], image_w, image_h, image_w, image_h, 0);
+    ips200_show_gray_image(0 + image_xmove, 125, bin_image_circlr[0], image_w, image_h, image_w, image_h, 0);
     //
     //    ips200_show_string(0, 180, "ifstop:");
     //    ips200_show_int(60,180,stop,3);
@@ -87,6 +87,9 @@ void screen_show(void)
     ips200_draw_line(0 + image_xmove, (uint16)hightest + 125, image_w + image_xmove, (uint16)hightest + 125, RGB565_RED);
     ips200_draw_line(0 + image_xmove, (uint16)image_h - lowest, image_w + image_xmove, (uint16)image_h - lowest, RGB565_RED);
     ips200_draw_line(0 + image_xmove, (uint16)image_h - lowest + 125, image_w + image_xmove, (uint16)image_h - lowest + 125, RGB565_RED);
+
+    ips200_draw_line(0 + image_xmove, (uint16)TU_CIRCLE_Y_MIN+125, image_w + image_xmove, (uint16)TU_CIRCLE_Y_MIN+125, RGB565_BLUE);
+    ips200_draw_line(0 + image_xmove, (uint16)TU_CIRCLE_Y_MAX+125, image_w + image_xmove, (uint16)TU_CIRCLE_Y_MAX+125, RGB565_BLUE);
     for (int i = hightest; i < image_h - 1; i++)
     {
         if ((l_border[i] > 0) && ((l_border[i] + image_xmove) < (ips200_width_max - 1)))

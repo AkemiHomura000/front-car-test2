@@ -9,6 +9,16 @@
 #define CODE_IMAGE_H_
 
 #pragma section all "cpu0_dsram"
+#define TU_M_PI 3.1415926
+#define TU_VISITED 127
+#define TU_QUEUE_SIZE (image_w * image_h)
+#define TU_BOX_COLOR 0
+#define TU_MIN_CIRCLE_COUNT 600     // 最小像素数量
+#define TU_MAX_CIRCLE_COUNT 2000    // 最大像素数量
+#define TU_CIRCLE_Y_MIN 30       // 检测环岛的范围
+#define TU_CIRCLE_Y_MAX 90       // 检测环岛的范围
+#define TU_MIN_DIFF_RATIO 0.012f    // 最小差值比率
+#define TU_MAX_L_R_DIFF_RATIO 0.35f // 左右差异比率
 //颜色定义
 #define uesr_RED     0XF800    //红色
 #define uesr_GREEN   0X07E0    //绿色
@@ -27,11 +37,13 @@ typedef struct corner_inline
 }corner_inline;
 //---------function declaration----------
 extern void image_process(void); //直接在中断或循环里调用此程序就可以循环执行了
+extern bool find_circle_area(void);
 extern int16 limit_a_b(int16 x, int16 a, int16 b);
 //---------data declaration------------
 extern IfxCpu_mutexLock screen_mutex;
 extern uint8 original_image[image_h][image_w];//原图数组
 extern uint8 bin_image[image_h][image_w];//二值化图像数组
+extern uint8 bin_image_circlr[image_h][image_w]; // 图像数组
 extern uint8 l_border[image_h];//左线数组(内容, 序号)
 extern uint8 r_border[image_h];//右线数组
 extern uint8 center_line[image_h];//中线数组

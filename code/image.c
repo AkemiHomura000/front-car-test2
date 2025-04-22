@@ -27,8 +27,9 @@
 
 /*变量声明*/
 uint8 original_image[image_h][image_w];
-uint8 image_thereshold;            // 图像分割阈值
-uint8 bin_image[image_h][image_w]; // 图像数组
+uint8 image_thereshold;                   // 图像分割阈值
+uint8 bin_image[image_h][image_w];        // 图像数组
+uint8 bin_image_circlr[image_h][image_w]; // 图像数组
 corner_inline *l_corner_point = NULL;
 corner_inline *r_corner_point = NULL;
 
@@ -650,6 +651,333 @@ void EdgeLinePerspective(uint16 *in_line, uint8 num, uint16 *out_line)
             out_line[count * 2 + 1] = solve_y;
     }
 }
+/**
+ * @brief 检查坐标是否在图像范围内
+ * @param x
+ * @param y
+ * @return true 在图像范围内
+ * @return false 不在图像范围内
+ */
+bool is_valid(int x, int y)
+{
+    return (x >= 0 && x < image_w && y >= TU_CIRCLE_Y_MIN && y < TU_CIRCLE_Y_MAX);
+}
+int tu_min(int a, int b)
+{
+    return (a < b) ? a : b;
+}
+/**
+ * @brief 搜索连通的区域，找到后标记为TU_VISITED，当且仅当只有两个对角线的两个角有点时，才认为是有效区域，如果和图像边界相交，则不认为是有效区域
+ * @param image
+ * @param start_x
+ * @param start_y
+ * @param sum_x x坐标的和
+ * @param sum_y y坐标的和
+ * @param count 像素数量
+ * @param x_min x坐标最小值
+ * @param x_max x坐标最大值
+ * @param y_min y坐标最小值
+ * @param y_max y坐标最大值
+ */
+void bfs(uint8 *image, int start_x, int start_y, int *sum_x, int *sum_y, int *count, int *x_min, int *x_max, int *y_min, int *y_max)
+{
+    int queue_x[TU_QUEUE_SIZE], queue_y[TU_QUEUE_SIZE];
+    int front = 0, rear = 0; // 队列的头尾索引
+
+    queue_x[rear] = start_x;
+    queue_y[rear] = start_y;
+    rear++;
+
+    image[start_y * image_w + start_x] = TU_VISITED; // 标记访问
+    *sum_x = start_x;
+    *sum_y = start_y;
+    *count = 1;
+
+    int min_x = start_x, max_x = start_x;
+    int min_y = start_y, max_y = start_y;
+
+    int dx[] = {1, -1, 0, 0};
+    int dy[] = {0, 0, 1, -1};
+
+    while (front < rear)
+    {
+        int x = queue_x[front];
+        int y = queue_y[front];
+        front++;
+
+        for (int d = 0; d < 4; d++)
+        {
+            int nx = x + dx[d];
+            int ny = y + dy[d];
+            if (is_valid(nx, ny) && image[ny * image_w + nx] == 0)
+            {
+
+                image[ny * image_w + nx] = TU_VISITED;
+                queue_x[rear] = nx;
+                queue_y[rear] = ny;
+                rear++;
+
+                *sum_x += nx;
+                *sum_y += ny;
+                (*count)++;
+
+                if (nx < min_x)
+                    min_x = nx;
+                if (nx > max_x)
+                    max_x = nx;
+                if (ny < min_y)
+                    min_y = ny;
+                if (ny > max_y)
+                    max_y = ny;
+            }
+        }
+    }
+    *x_min = min_x;
+    *x_max = max_x;
+    *y_min = min_y;
+    *y_max = max_y;
+    int width = max_x - min_x;
+    int height = max_y - min_y;
+
+    // 从中心点开始是否被截断
+    bool l_t_valid = true;
+    bool r_t_valid = true;
+    bool l_b_valid = true;
+    bool r_b_valid = true;
+
+    int l_t_x = min_x;
+    int l_t_y = min_y;
+    int r_t_x = max_x;
+    int r_t_y = min_y;
+    int l_b_x = min_x;
+    int l_b_y = max_y;
+    int r_b_x = max_x;
+    int r_b_y = max_y;
+
+    int center_x = (min_x + max_x) / 2;
+    int center_y = (min_y + max_y) / 2;
+
+    int num = tu_min(max_x - min_x, max_y - min_y) * 2;
+    // 统计从中心点到四个角点的线段上有多少TU_VISITED的点
+    int l_t_count = 0, r_t_count = 0, l_b_count = 0, r_b_count = 0;
+    for (int i = 0; i < num; i++)
+    {
+        int x1 = center_x + (l_t_x - center_x) * i / num;
+        int y1 = center_y + (l_t_y - center_y) * i / num;
+        if (is_valid(x1, y1) && l_t_valid)
+        {
+            if (image[y1 * image_w + x1] == TU_VISITED || image[y1 * image_w + x1] == TU_BOX_COLOR)
+            {
+                image[y1 * image_w + x1] = TU_BOX_COLOR; // 画框
+                l_t_count++;
+            }
+            else
+            {
+                l_t_valid = false;
+            }
+        }
+        else
+        {
+            l_t_valid = false;
+        }
+        x1 = center_x + (r_t_x - center_x) * i / num;
+        y1 = center_y + (r_t_y - center_y) * i / num;
+        if (is_valid(x1, y1) && r_t_valid)
+        {
+            if (image[y1 * image_w + x1] == TU_VISITED || image[y1 * image_w + x1] == TU_BOX_COLOR)
+            {
+                image[y1 * image_w + x1] = TU_BOX_COLOR; // 画框
+                r_t_count++;
+            }
+            else
+            {
+                r_t_valid = false;
+            }
+        }
+        else
+        {
+            r_t_valid = false;
+        }
+
+        x1 = center_x + (l_b_x - center_x) * i / num;
+        y1 = center_y + (l_b_y - center_y) * i / num;
+        if (is_valid(x1, y1) && l_b_valid)
+        {
+            if (image[y1 * image_w + x1] == TU_VISITED || image[y1 * image_w + x1] == TU_BOX_COLOR)
+            {
+                image[y1 * image_w + x1] = TU_BOX_COLOR; // 画框
+                l_b_count++;
+            }
+            else
+            {
+                l_b_valid = false;
+            }
+        }
+        else
+        {
+            l_b_valid = false;
+        }
+
+        x1 = center_x + (r_b_x - center_x) * i / num;
+        y1 = center_y + (r_b_y - center_y) * i / num;
+        if (is_valid(x1, y1) && r_b_valid)
+        {
+            if (image[y1 * image_w + x1] == TU_VISITED || image[y1 * image_w + x1] == TU_BOX_COLOR)
+            {
+                image[y1 * image_w + x1] = TU_BOX_COLOR; // 画框
+                r_b_count++;
+            }
+            else
+            {
+                r_b_valid = false;
+            }
+        }
+        else
+        {
+            r_b_valid = false;
+        }
+    }
+
+    int l_diff = abs(l_t_count - l_b_count);
+    int r_diff = abs(r_t_count - r_b_count);
+    float l_ratio = (float)l_diff / *count;
+    float r_ratio = (float)r_diff / *count;
+    int min_diff = tu_min(l_diff, r_diff);
+
+    //    printf("count=%d\n", *count);
+    //    printf("l_ratio=%f\n", l_ratio);
+    //    printf("r_ratio=%f\n", r_ratio);
+    // std::cout << "count=" << *count << std::endl;
+    // std::cout << "l_ratio=" << l_ratio << std::endl;
+    // std::cout << "r_ratio=" << r_ratio << std::endl;
+
+    // 检查是否是有效区域
+    if (l_ratio > TU_MIN_DIFF_RATIO && r_ratio > TU_MIN_DIFF_RATIO && min_diff != 0 && abs(l_diff - r_diff) / min_diff < TU_MAX_L_R_DIFF_RATIO)
+    {
+        // 满足条件，标记为有效区域
+    }
+    else
+    {
+        *count = 0; // 直接标记此区域为无效
+    }
+    // 检查是否和图像边界相交
+    if (min_x == 0 || max_x == image_w - 1 || min_y == 0 || max_y == image_h - 1)
+    {
+        *count = 0; // 直接标记此区域为无效
+    }
+}
+/**
+ * @brief 根据坐标画框
+ * @param image
+ * @param x_min
+ * @param x_max
+ * @param y_min
+ * @param y_max
+ */
+void draw_box(uint8 *image, int x_min, int x_max, int y_min, int y_max)
+{
+    int left = (x_min < 0) ? 0 : x_min;
+    int right = (x_max >= image_w) ? image_w - 1 : x_max;
+    int top = (y_min < 0) ? 0 : y_min;
+    int bottom = (y_max >= image_h) ? image_h - 1 : y_max;
+    for (int i = left; i <= right; i++)
+    {
+        image[top * image_w + i] = TU_BOX_COLOR;    // 上边
+        image[bottom * image_w + i] = TU_BOX_COLOR; // 下边
+    }
+    for (int j = top; j <= bottom; j++)
+    {
+        image[j * image_w + left] = TU_BOX_COLOR;  // 左边
+        image[j * image_w + right] = TU_BOX_COLOR; // 右边
+    }
+}
+void draw_circle_range_line(uint8 *image)
+{
+    for (uint16 i = 0; i < image_w; i++)
+    {
+        image[TU_CIRCLE_Y_MIN * image_w + i] = TU_BOX_COLOR; // 上边
+        image[TU_CIRCLE_Y_MAX * image_w + i] = TU_BOX_COLOR; // 下边
+    }
+}
+/**
+ * @brief 寻找所有的区域
+ * @param image
+ */
+bool img_update;
+bool find_circle(uint8 *image)
+{
+    bool find_circle = false;
+    for (int y = TU_CIRCLE_Y_MIN; y < TU_CIRCLE_Y_MAX; y++)
+    {
+        for (int x = 0; x < image_w; x++)
+        {
+            if (image[y * image_w + x] == 0)
+            {
+                int sum_x = 0, sum_y = 0, count = 0;
+                int x_min = 0, x_max = 0, y_min = 0, y_max = 0;
+                bfs(image, x, y, &sum_x, &sum_y, &count, &x_min, &x_max, &y_min, &y_max);
+                if (count > TU_MIN_CIRCLE_COUNT && count < TU_MAX_CIRCLE_COUNT)
+                {
+                    printf("count=%d\n", count);
+                    int center_x = sum_x / count;
+                    int center_y = sum_y / count;
+                    draw_box(image, x_min, x_max, y_min, y_max); // 画框
+                    find_circle = true;
+                }
+            }
+        }
+    }
+    if (find_circle)
+    {
+        printf("find_circle \n");
+        return true;
+    }
+    else
+    {
+        printf("not find_circle \n");
+        return false;
+    }
+    // printf("-\n");
+    // draw_circle_range_line(image);
+}
+bool circle_flag = false; // 是否找到环岛
+bool find_circle_area(void)
+{
+    if (img_update)
+    {
+        // 把mt9v03x_image二值化后并保存到bin_image_circlr，此处手动设置阈值
+        for (int i = 0; i < image_h; i++)
+        {
+            for (int j = 0; j < image_w; j++)
+            {
+                bin_image_circlr[i][j] = mt9v03x_image[i][j] > 100 ? 255 : 0;
+            }
+        }
+        bool find = find_circle(bin_image_circlr[0]);
+        img_update = false;
+        if (find)
+        {
+            circle_flag = true;
+            return true;
+        }
+        else
+        {
+            circle_flag = false;
+            return false;
+        }
+    }
+    else
+    {
+        if (circle_flag)
+        {
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+    }
+}
 /*------------------------------------------------------------------------------------------
 函数名称：void image_process(void)
 功能说明：最终处理函数
@@ -664,12 +992,14 @@ int foot_roadwidth = 0;
 int head_roadwidth = 0;
 void image_process(void)
 {
+    img_update = true;
+    circle_flag = false;
     Get_image(mt9v03x_image);
     turn_to_bin();
     /*提取赛道边界*/
     image_filter(bin_image);      // 滤波
     image_draw_rectan(bin_image); // 预处理
-    // 清零
+                                  // 清零
     data_stastics_l = 0;
     data_stastics_r = 0;
     if (get_start_point(image_h - 2)) // 找到起点了，再执行八领域，没找到就一直找
@@ -700,6 +1030,7 @@ void image_process(void)
             }
         }
     }
+
     // 元素对左右边线的处理全部放在这里
     // 判别是否有岔口（十字或环）
     foot_roadwidth = r_border[image_h - 2] - l_border[image_h - 2];
