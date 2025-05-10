@@ -43,14 +43,12 @@
 IFX_INTERRUPT(cc60_pit_ch0_isr, CCU6_0_CH0_INT_VECTAB_NUM, CCU6_0_CH0_ISR_PRIORITY)
 {
     interrupt_global_enable(0);                     // 开启中断嵌套
-
+    //于isr_config中定义为cpu2运行
     encoder_Read();
+
     motor_control();
 
     pit_clear_flag(CCU60_CH0);
-
-
-
 
 }
 
@@ -58,17 +56,52 @@ IFX_INTERRUPT(cc60_pit_ch0_isr, CCU6_0_CH0_INT_VECTAB_NUM, CCU6_0_CH0_ISR_PRIORI
 IFX_INTERRUPT(cc60_pit_ch1_isr, CCU6_0_CH1_INT_VECTAB_NUM, CCU6_0_CH1_ISR_PRIORITY)
 {
     interrupt_global_enable(0);                     // 开启中断嵌套
+
+
+    image_process();
+
     pit_clear_flag(CCU60_CH1);
-
-
-
-
 }
 
 IFX_INTERRUPT(cc61_pit_ch0_isr, CCU6_1_CH0_INT_VECTAB_NUM, CCU6_1_CH0_ISR_PRIORITY)
 {
     interrupt_global_enable(0);                     // 开启中断嵌套
     //
+    // 滴答客解析接收到的数据
+        seekfree_assistant_data_analysis();
+        // 遍历
+        for(uint8_t i = 0; i < SEEKFREE_ASSISTANT_SET_PARAMETR_COUNT; i++)
+        {
+            // 更新标志位
+            if(seekfree_assistant_parameter_update_flag[i])
+            {
+                while(!(IfxCpu_acquireMutex(&param_mutex)));
+                seekfree_assistant_parameter_update_flag[i] = 0;
+                //--------------更新内部参数
+                switch(i){
+                    case 0:
+                        err_kp       = seekfree_assistant_parameter[0];
+                        break;
+                    case 1:
+                        err_kd       = seekfree_assistant_parameter[1];
+                        break;
+                    case 2:
+                        stop         = seekfree_assistant_parameter[2];
+                        break;
+                    case 3:
+                        t_speed      = seekfree_assistant_parameter[3];
+                        break;
+                }
+                //--------------通过DEBBUG串口发送信息
+//                printf("receive data channel : %d ", i);
+//                printf("data : %f ", seekfree_assistant_parameter[i]);
+//                printf("\r\n");
+                IfxCpu_releaseMutex(&param_mutex);
+            }
+        }
+
+
+
     pit_clear_flag(CCU61_CH0);
 
 

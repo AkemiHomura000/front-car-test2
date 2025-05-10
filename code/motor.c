@@ -14,31 +14,46 @@
 // 全局变量声明
 int16 pwm_r = dead_least_r;             // 右电机PWM值
 int16 pwm_l = dead_least_l;             // 左电机PWM值
-int32 speed_r;  // 右电机速度
-int32 speed_l;  // 左电机速度
-int32 target_speed = 50;
-uint8 stop = 1;
+int16 speed_r;  // 右电机速度
+int16 speed_l;  // 左电机速度
+int dspeed_here = 0;
+int16 target_speed = 80;
+int16 t_speed = 80;
+bool stop = 0;
 
 // 电机控制函数
 void motor_control() {
-    if(1)
+    bool stop_now;
+    if(IfxCpu_acquireMutex(&param_mutex))
+    {
+        stop_now = stop;
+        target_speed = t_speed;
+        IfxCpu_releaseMutex(&param_mutex);
+    }
+    if(!stop_now)
     {
         int16 pwm_r_add = 0;  // 右电机PWM增量
         int16 pwm_l_add = 0;  // 左电机PWM增量
-            int level = 1;
+        float level = 1.0;
 
-            if (error >= 60 || error <= -60){
-                    target_speed = 700;
-                    level = 1.15;
-                }
-            else{
-                target_speed = 900;
-                level = 1;
-            }
-
+//        if (error >= 20 || error <= -20)
+//        {
+//            target_speed = 80;
+//            level = 1.15;
+//        }
+//        else
+//        {
+//            target_speed = 120;
+//            level = 1.0;
+//        }
+        if(IfxCpu_acquireMutex(&dspeed_mutex))
+        {
+            dspeed_here = d_speed;
+            IfxCpu_releaseMutex(&dspeed_mutex);
+        }
             // 根据速度误差调整PWM值//level * 0.13
-        pwm_l_add = MotorPID_Output(&sptr_l, speed_l, 0.13 * level * target_speed - d_speed);
-        pwm_r_add = MotorPID_Output(&sptr_r, speed_r, 0.13 * level * target_speed + d_speed);
+        pwm_l_add = MotorPID_Output(&sptr_l, speed_l, (int16)(level * (float)target_speed - (float)dspeed_here));
+        pwm_r_add = MotorPID_Output(&sptr_r, speed_r, (int16)(level * (float)target_speed + (float)dspeed_here));
 
             // 更新PWM值
         pwm_l += pwm_l_add;
@@ -47,15 +62,12 @@ void motor_control() {
             // 限制PWM值的范围
         pwm_l = limit_a_b(pwm_l, -6000, 6000);
         pwm_r = limit_a_b(pwm_r, -6000, 6000);
-        if(speed_l == 0) pwm_l=1000;
-        if(speed_r == 0) pwm_r=1300;
     }
     else
     {
         pwm_l=0;
         pwm_r=0;
     }
-
     // 设置右电机PWM输出
     if (pwm_r >= 0) {
         gpio_set_level(P21_3, GPIO_LOW);  // 设置电机方向为正转
@@ -79,10 +91,10 @@ void motor_control() {
 
 // 编码器读取函数
 void encoder_Read() {
-    speed_l = encoder_get_count(TIM5_ENCODER);  // 读取左电机编码器值
-    encoder_clear_count(TIM5_ENCODER);  // 清除左电机编码器计数
-    speed_r = -encoder_get_count(TIM6_ENCODER);  // 读取右电机编码器值（反向）
-    encoder_clear_count(TIM6_ENCODER);  // 清除右电机编码器计数
+    speed_l = encoder_get_count(TIM2_ENCODER);  // 读取左电机编码器值
+    encoder_clear_count(TIM2_ENCODER);  // 清除左电机编码器计数
+    speed_r = -encoder_get_count(TIM4_ENCODER);  // 读取右电机编码器值（反向）
+    encoder_clear_count(TIM4_ENCODER);  // 清除右电机编码器计数
 }
 
 // PID初始化函数

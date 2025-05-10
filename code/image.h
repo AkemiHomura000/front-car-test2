@@ -41,6 +41,9 @@ extern bool find_circle_area(void);
 extern int16 limit_a_b(int16 x, int16 a, int16 b);
 //---------data declaration------------
 extern IfxCpu_mutexLock screen_mutex;
+extern IfxCpu_mutexLock param_mutex;
+extern IfxCpu_mutexLock dspeed_mutex;
+extern uint8 threshold_add;
 extern uint8 original_image[image_h][image_w];//原图数组
 extern uint8 bin_image[image_h][image_w];//二值化图像数组
 extern uint8 bin_image_circlr[image_h][image_w]; // 图像数组
@@ -54,7 +57,6 @@ extern float error;          // 误差值
 extern float err_kp;
 extern float err_kd;
 extern int foot_roadwidth;
-extern int head_roadwidth;
 extern uint8 hightest;//八邻域寻线得最高点，后与hightest_least比较取大值
 extern uint8 cent_line_high;//中线寻得最高点
 extern int xflg_now;
