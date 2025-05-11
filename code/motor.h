@@ -27,11 +27,12 @@ extern void PID_Init(PID_Datatypedef*sptr);
 
 extern void print_angle(void);
 //---------data declaration------------
-extern int32 target_speed_l;
-extern int32 target_speed_r;
-extern int32 target_speed;
-extern int32 speed_l;
-extern int32 speed_r;
-extern uint8 stop;
+extern int16 target_speed_l;
+extern int16 target_speed_r;
+extern int16 target_speed;
+extern int16 t_speed;
+extern int16 speed_l;
+extern int16 speed_r;
+extern bool stop;
 extern float angle_yaw;
 #endif /* CODE_MOTOR_H_ */

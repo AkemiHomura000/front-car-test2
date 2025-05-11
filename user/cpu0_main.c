@@ -57,7 +57,7 @@ int core0_main(void)//负责视觉处理
             break;
         system_delay_ms(500);                                                   // 短延时快速闪灯表示异常
     }
-
+    pit_ms_init(CCU60_CH1, 100);
     // 此处编写用户代码 例如外设初始化代码等
 
     cpu_wait_event_ready();         // 等待所有核心初始化完毕
