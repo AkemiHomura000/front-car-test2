@@ -33,10 +33,21 @@ void encoder_Init()
     encoder_quad_init(TIM5_ENCODER,TIM5_ENCODER_CH1_P10_3,TIM5_ENCODER_CH2_P10_1);//左边
     encoder_quad_init(TIM6_ENCODER,TIM6_ENCODER_CH1_P20_3,TIM6_ENCODER_CH2_P20_0);//右边
 }
-
+void imu_init()
+{
+     while (1)
+    {
+        if (imu660ra_init())
+            printf("\r\n IMU660RA init error."); // IMU660RA 初始化失败
+        else
+            break;
+        gpio_toggle_level(LED1); // 翻转 LED 引脚输出电平 控制 LED 亮灭 初始化出错这个灯会闪的很慢
+    }
+}
 void all_init()
 {
     PWM_Init();
+    imu_init();
     encoder_Init();
     gpio_init(LED1, GPO, GPIO_HIGH, GPO_PUSH_PULL);
 }

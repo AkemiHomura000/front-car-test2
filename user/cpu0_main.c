@@ -34,6 +34,7 @@
 ********************************************************************************************************************/
 #include "zf_common_headfile.h"
 #include "image.h"
+#include "motor.h"
 #pragma section all "cpu0_dsram"
 // 将本语句与#pragma section all restore语句之间的全局变量都放在CPU0的RAM中
 
@@ -62,6 +63,7 @@ int core0_main(void)//负责视觉处理
     cpu_wait_event_ready();         // 等待所有核心初始化完毕
     while (TRUE)
     {
+        print_angle();
         image_process();
         // 此处编写需要循环执行的代码
     }

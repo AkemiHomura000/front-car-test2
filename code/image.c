@@ -929,12 +929,12 @@ bool find_circle(uint8 *image)
     }
     if (find_circle)
     {
-        printf("find_circle \n");
+        // printf("find_circle \n");
         return true;
     }
     else
     {
-        printf("not find_circle \n");
+        // printf("not find_circle \n");
         return false;
     }
     // printf("-\n");

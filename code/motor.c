@@ -19,6 +19,10 @@ int32 speed_l;  // 左电机速度
 int32 target_speed = 50;
 uint8 stop = 1;
 
+float angle_yaw=0; // 角度
+float zero_point = 0; // imu零点
+int8 zero_point_count = 0; // imu零点计数
+#define IMU_ZERO_COUNT 50 // imu零点计数
 // 电机控制函数
 void motor_control() {
     if(1)
@@ -84,7 +88,32 @@ void encoder_Read() {
     speed_r = -encoder_get_count(TIM6_ENCODER);  // 读取右电机编码器值（反向）
     encoder_clear_count(TIM6_ENCODER);  // 清除右电机编码器计数
 }
+void imu_Read() {
+    imu660ra_get_acc();  // 获取 IMU660RA 的加速度测量数值
+    imu660ra_get_gyro(); // 获取 IMU660RA 的角速度测量数值
+   float data = imu660ra_gyro_transition(imu660ra_gyro_z);
+    if(zero_point_count<IMU_ZERO_COUNT)
+    {
+        zero_point += data;
+        zero_point_count++;
+    }
+    else if(zero_point_count==IMU_ZERO_COUNT)
+    {
+        zero_point /= IMU_ZERO_COUNT;
+        zero_point_count++;
+    }
+    else
+    {
+        data -= zero_point;
+    }
+    angle_yaw += data * 0.01;
+    // printf("angle_yaw:%f\r\n",angle_yaw);
+}
 
+void print_angle()
+{
+    printf("angle_yaw:%f\r\n",angle_yaw);
+}
 // PID初始化函数
 void PID_Init(PID_Datatypedef* sptr) {
     sptr->P = 0;  // 初始化比例系数

@@ -46,7 +46,7 @@ IFX_INTERRUPT(cc60_pit_ch0_isr, CCU6_0_CH0_INT_VECTAB_NUM, CCU6_0_CH0_ISR_PRIORI
 
     encoder_Read();
     motor_control();
-
+    imu_Read();
     pit_clear_flag(CCU60_CH0);
 
 
