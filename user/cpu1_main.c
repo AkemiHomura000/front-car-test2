@@ -54,39 +54,40 @@ void core1_main(void) // 负责电机控制和上位机交流
     gpio_init(P21_5, GPO, GPIO_HIGH, GPO_PUSH_PULL); // 初始化 默认高电平 推挽输出模式 5对应左轮方向
     gpio_init(P21_3, GPO, GPIO_LOW, GPO_PUSH_PULL);  // 初始化 默认高电平 推挽输出模式 3对应右轮方向
 
-//    wireless_uart_init();
-//    seekfree_assistant_interface_init(SEEKFREE_ASSISTANT_WIRELESS_UART);
-    seekfree_assistant_interface_init(SEEKFREE_ASSISTANT_DEBUG_UART);
     pit_ms_init(CCU61_CH0, 50);
-
+    pit_ms_init(CCU60_CH0, 50);
+    pit_ms_init(CCU60_CH1, 10);
+    //    wireless_uart_init();
+    //    seekfree_assistant_interface_init(SEEKFREE_ASSISTANT_WIRELESS_UART);
+    seekfree_assistant_interface_init(SEEKFREE_ASSISTANT_DEBUG_UART);
 
     // 此处编写用户代码 例如外设初始化代码等
     cpu_wait_event_ready(); // 等待所有核心初始化完毕
     printf("init_uart\r\n");
-//    seekfree_assistant_oscilloscope_struct oscilloscope_data;
-//    oscilloscope_data.data[0] = speed_l;
-//    oscilloscope_data.data[1] = speed_r;
-//    oscilloscope_data.data[2] = target_speed - d_speed;
-//    oscilloscope_data.data[3] = target_speed + d_speed;
-//    oscilloscope_data.data[4] = error;
-//    oscilloscope_data.data[5] = d_speed;
-//    oscilloscope_data.channel_num = 6;
+    //    seekfree_assistant_oscilloscope_struct oscilloscope_data;
+    //    oscilloscope_data.data[0] = speed_l;
+    //    oscilloscope_data.data[1] = speed_r;
+    //    oscilloscope_data.data[2] = target_speed - d_speed;
+    //    oscilloscope_data.data[3] = target_speed + d_speed;
+    //    oscilloscope_data.data[4] = error;
+    //    oscilloscope_data.data[5] = d_speed;
+    //    oscilloscope_data.channel_num = 4;
     while (TRUE)
     {
-//        bool circle = find_circle_area();
-//        if (IfxCpu_acquireMutex(&screen_mutex))
-//        {
-//            ips200_show_string(160, 250, "circ:");
-//            ips200_show_int(200,250,circle,3);
-//            IfxCpu_releaseMutex(&screen_mutex);
-//        }
-//        oscilloscope_data.data[0] = speed_l;
-//        oscilloscope_data.data[1] = speed_r;
-//        oscilloscope_data.data[2] = target_speed - d_speed;
-//        oscilloscope_data.data[3] = target_speed + d_speed;
-//        oscilloscope_data.data[4] = error;
-//        oscilloscope_data.data[5] = d_speed;
-//        seekfree_assistant_oscilloscope_send(&oscilloscope_data);
+        //        bool circle = find_circle_area();
+        //        if (IfxCpu_acquireMutex(&screen_mutex))
+        //        {
+        //            ips200_show_string(160, 250, "circ:");
+        //            ips200_show_int(200,250,circle,3);
+        //            IfxCpu_releaseMutex(&screen_mutex);
+        //        }
+        //        oscilloscope_data.data[0] = speed_l;
+        //        oscilloscope_data.data[1] = speed_r;
+        //        oscilloscope_data.data[2] = target_speed - d_speed;
+        //        oscilloscope_data.data[3] = target_speed + d_speed;
+        //        oscilloscope_data.data[4] = error;
+        //        oscilloscope_data.data[5] = d_speed;
+        //        seekfree_assistant_oscilloscope_send(&oscilloscope_data);
         system_delay_ms(5);
         // 此处编写需要循环执行的代码
     }

@@ -16,12 +16,12 @@
 #define white_pixel 255
 #define black_pixel 0
 #define standard_foot_roadwidth 35 // 可能受光线等二值化影响,逆透视改变则需要对应改变
-#define bin_jump_num 1              // 跳过的点数
-#define border_max image_w - 2      // 边界最大值
-#define border_min 1                // 边界最小值
-#define USE_num image_h * 3         // 定义找点的数组成员个数按理说300个点能放下，但是有些特殊情况确实难顶，多定义了一点
-#define lost_width 15               // 处理区两侧单边延展列数，基于底线宽（底线丢时可能处理区不完全包含于视野）
-#define hightest_least 15           // 最终处理上边忽略行数之最少值（寻线可能比其更大）
+#define bin_jump_num 1             // 跳过的点数
+#define border_max image_w - 2     // 边界最大值
+#define border_min 1               // 边界最小值
+#define USE_num image_h * 3        // 定义找点的数组成员个数按理说300个点能放下，但是有些特殊情况确实难顶，多定义了一点
+#define lost_width 15              // 处理区两侧单边延展列数，基于底线宽（底线丢时可能处理区不完全包含于视野）
+#define hightest_least 15          // 最终处理上边忽略行数之最少值（寻线可能比其更大）
 
 #define GrayScale 256 // 大津法中
 
@@ -34,16 +34,16 @@ corner_inline *l_corner_point = NULL;
 corner_inline *r_corner_point = NULL;
 
 // 存放点的x，y坐标
-uint16 points_l[(uint16)USE_num][2] = {{0}}; // 左线八邻域
-uint16 points_r[(uint16)USE_num][2] = {{0}}; // 右线八邻域
-uint16 dir_r[(uint16)USE_num] = {0};         // 用来存储右边生长方向
-uint16 dir_l[(uint16)USE_num] = {0};         // 用来存储左边生长方向
-uint16 data_stastics_l = 0;                  // 统计左边找到点的个数
-uint16 data_stastics_r = 0;                  // 统计右边找到点的个数
-uint8 hightest = 0;                          // 八邻域寻线得最高点，后与hightest_least比较取大值
-uint16 trans_l[(uint16)USE_num][2] = {{0}};  // 左线变换
-uint16 trans_r[(uint16)USE_num][2] = {{0}};  // 右线
-uint16 beyond_trans_l[(uint16)USE_num][2] = {{0}};//为寻上角而过度逆变
+uint16 points_l[(uint16)USE_num][2] = {{0}};       // 左线八邻域
+uint16 points_r[(uint16)USE_num][2] = {{0}};       // 右线八邻域
+uint16 dir_r[(uint16)USE_num] = {0};               // 用来存储右边生长方向
+uint16 dir_l[(uint16)USE_num] = {0};               // 用来存储左边生长方向
+uint16 data_stastics_l = 0;                        // 统计左边找到点的个数
+uint16 data_stastics_r = 0;                        // 统计右边找到点的个数
+uint8 hightest = 0;                                // 八邻域寻线得最高点，后与hightest_least比较取大值
+uint16 trans_l[(uint16)USE_num][2] = {{0}};        // 左线变换
+uint16 trans_r[(uint16)USE_num][2] = {{0}};        // 右线
+uint16 beyond_trans_l[(uint16)USE_num][2] = {{0}}; // 为寻上角而过度逆变
 uint16 beyond_trans_r[(uint16)USE_num][2] = {{0}};
 
 uint8 l_border[image_h];    // 左线数组(内容, 序号)
@@ -211,7 +211,7 @@ uint8 threshold_add = 0;
 void turn_to_bin(void)
 {
     uint8 i, j;
-    image_thereshold = otsuThreshold(original_image[0], image_w, image_h)+threshold_add; ///////////////根据反光情况修改
+    image_thereshold = otsuThreshold(original_image[0], image_w, image_h) + threshold_add; ///////////////根据反光情况修改
     for (i = 0; i < image_h; i++)
     {
         for (j = 0; j < image_w; j++)
@@ -620,8 +620,8 @@ void EdgeLinePerspective(uint16 *in_line, uint8 num, uint16 *out_line, double *c
         float j = in_line[count * 2 + 1];
         uint16 solve_x = (int)((change_inverse_Mat[0] * i + change_inverse_Mat[1] * j + change_inverse_Mat[2]) / (change_inverse_Mat[6] * i + change_inverse_Mat[7] * j + change_inverse_Mat[8]));
         uint16 solve_y = (int)((change_inverse_Mat[3] * i + change_inverse_Mat[4] * j + change_inverse_Mat[5]) / (change_inverse_Mat[6] * i + change_inverse_Mat[7] * j + change_inverse_Mat[8]));
-            out_line[count * 2 + 0] = solve_x;
-            out_line[count * 2 + 1] = solve_y;
+        out_line[count * 2 + 0] = solve_x;
+        out_line[count * 2 + 1] = solve_y;
     }
 }
 /**
@@ -965,109 +965,120 @@ float error = 0;
 float error_last = 0;
 float err_kp = 5;
 float err_kd = 0.15;
-int d_speed = 0; // 定义左右两轮的差速
-int e_calcu_lenth = 0;//动态的误差计算范围
+int d_speed = 0;       // 定义左右两轮的差速
+int e_calcu_lenth = 0; // 动态的误差计算范围
 int dspeed_now = 0;
 void error_calculate(void)
 {
     float kp = 0; // 采用动态kp
     float err_kp_now = 0;
     float err_kd_now = 0;
-    if(IfxCpu_acquireMutex(&param_mutex))
+    if (IfxCpu_acquireMutex(&param_mutex))
     {
         err_kp_now = err_kp;
         err_kd_now = err_kd;
         IfxCpu_releaseMutex(&param_mutex);
     }
     error = 0;
-    d_speed = 0;
+    // d_speed = 0;
     e_calcu_lenth = 1;
-//    if((image_h - 5)>(hightest + 25))
-//    {
+    //    if((image_h - 5)>(hightest + 25))
+    //    {
     for (int i = image_h - 40; i > 60; i--)
     {
-        if(center_line[i])// && (my_abs(center_line[i]-center_line[i-1])<10))
+        if (center_line[i]) // && (my_abs(center_line[i]-center_line[i-1])<10))
         {
             error += (image_w / 2 - center_line[i]); // 预瞄点计算原始误差
             e_calcu_lenth++;
         }
-        else break;
+        else
+            break;
     }
     error /= e_calcu_lenth;
-//    }
+    //    }
     if (IfxCpu_acquireMutex(&screen_mutex))
     {
-        ips200_show_int(150,270,error,3);
+        ips200_show_int(150, 270, error, 3);
         IfxCpu_releaseMutex(&screen_mutex);
     }
-
-    kp = Maxmin(0.001 * error * error + err_kp_now, 0, 15);//限度
-    dspeed_now = Maxmin((kp * error + err_kd_now * (error - error_last)), -150, 150);
-    if(IfxCpu_acquireMutex(&dspeed_mutex))
+    if (abs(error) <= 1 && abs(error_last) <= 1)
     {
-        d_speed = dspeed_now;
+        error = 0;
+    }
+    else if (abs(error) > 10)
+    {
+        error = 10;
+    }
+    kp = Maxmin(0.001 * error * error + err_kp_now, 0, 15); // 限度
+    dspeed_now = Maxmin((kp * error + err_kd_now * (error - error_last)), -150, 150);
+    if (IfxCpu_acquireMutex(&dspeed_mutex))
+    {
+        // d_speed = dspeed_now;
+        d_speed = (int)dspeed_now;
         IfxCpu_releaseMutex(&dspeed_mutex);
     }
     error_last = error;
 }
 void show_star(uint8 x, uint8 y)
 {
-    if ((x > 0) && (x < ips200_width_max-1) && (y > 0) && (y < ips200_height_max-1))
-    ips200_draw_point((uint16)x +10, (uint16)y +125, uesr_RED);
-    if ((x > -1) && ((x+2) < ips200_width_max) && (y > 0) && (y < ips200_height_max-1))
-    ips200_draw_point((uint16)x + 1 +10, (uint16)y +125, uesr_RED);
-    if ((x > 0) && (x < ips200_width_max-1) && (y > -1) && ((y+2) < ips200_height_max))
-    ips200_draw_point((uint16)x +10, (uint16)y + 1 +125, uesr_RED);
-    if ((x > 1) && ((x) < ips200_width_max) && (y > 0) && (y < ips200_height_max-1))
-    ips200_draw_point((uint16)x - 1 +10, (uint16)y +125, uesr_RED);
-    if ((x > 0) && (x < ips200_width_max-1) && (y > 1) && (y < ips200_height_max))
-    ips200_draw_point((uint16)x +10, (uint16)y - 1 +125, uesr_RED);
+    if ((x > 0) && (x < ips200_width_max - 1) && (y > 0) && (y < ips200_height_max - 1))
+        ips200_draw_point((uint16)x + 10, (uint16)y + 125, uesr_RED);
+    if ((x > -1) && ((x + 2) < ips200_width_max) && (y > 0) && (y < ips200_height_max - 1))
+        ips200_draw_point((uint16)x + 1 + 10, (uint16)y + 125, uesr_RED);
+    if ((x > 0) && (x < ips200_width_max - 1) && (y > -1) && ((y + 2) < ips200_height_max))
+        ips200_draw_point((uint16)x + 10, (uint16)y + 1 + 125, uesr_RED);
+    if ((x > 1) && ((x) < ips200_width_max) && (y > 0) && (y < ips200_height_max - 1))
+        ips200_draw_point((uint16)x - 1 + 10, (uint16)y + 125, uesr_RED);
+    if ((x > 0) && (x < ips200_width_max - 1) && (y > 1) && (y < ips200_height_max))
+        ips200_draw_point((uint16)x + 10, (uint16)y - 1 + 125, uesr_RED);
 }
 /***********************************************
-* @name  : corner_4points
-* @brief : 一边线以曲率半径寻角点,如不配合逆透视则上角点效果不好
-* @param : uint16* in_line: 输入八邻域边线二维数组:[i][0]=x,[i][1]=y
-*          int num: 输入边线的长度
-*          int dist: 三个点求曲率的两点之间的间隔的数量
-* @return: 第一个寻得角点,若为0则未寻得
-************************************************/
-int corner_4points(uint16* in_line, int num, int dist, bool orient)
+ * @name  : corner_4points
+ * @brief : 一边线以曲率半径寻角点,如不配合逆透视则上角点效果不好
+ * @param : uint16* in_line: 输入八邻域边线二维数组:[i][0]=x,[i][1]=y
+ *          int num: 输入边线的长度
+ *          int dist: 三个点求曲率的两点之间的间隔的数量
+ * @return: 第一个寻得角点,若为0则未寻得
+ ************************************************/
+int corner_4points(uint16 *in_line, int num, int dist, bool orient)
 {
-    if(orient == 0)
-    for (int i = dist-1; i < num-dist; i+=dist)//从小至大寻，对于八邻域边线即从底向上，找低角
-    {
-        if((in_line[i*2] > 10)&&(in_line[i*2] < 178)&&(in_line[i*2+1] > hightest+20)&&(in_line[i*2+1] < 90))
-        {        //处理画面中心之点，忽略左右上下屏幕边缘
-            float d1 = (in_line[i*2+1]-in_line[i*2+1-dist*2])/(in_line[i*2]-in_line[i*2-dist*2]);
-            float d2 = (in_line[i*2+1+dist*2]-in_line[i*2+1])/(in_line[i*2+dist*2]-in_line[i*2]);
-            float dd = (d2-d1)/(in_line[i*2+dist*2]-in_line[i*2-dist*2]);
-            if(!dd) continue;
-            float rr = (1+(d1+d2)*(d1+d2)/4)*(1+(d1+d2)*(d1+d2)/4)*(1+(d1+d2)*(d1+d2)/4) / dd/dd;
-           // rr = sqrtf(rr);//rr保正
-            int t_point_x = (int)((4*in_line[i*2]-in_line[i*2-dist*2]-in_line[i*2+dist*2])/2);
-            int t_point_y = (int)((4*in_line[i*2+1]-in_line[i*2-dist*2+1]-in_line[i*2+dist*2+1])/2);
-            if((rr < 100))//&&(bin_image[t_point_x][t_point_y] == white_pixel))//白包黑角
-            {
+    if (orient == 0)
+        for (int i = dist - 1; i < num - dist; i += dist) // 从小至大寻，对于八邻域边线即从底向上，找低角
+        {
+            if ((in_line[i * 2] > 10) && (in_line[i * 2] < 178) && (in_line[i * 2 + 1] > hightest + 20) && (in_line[i * 2 + 1] < 90))
+            { // 处理画面中心之点，忽略左右上下屏幕边缘
+                float d1 = (in_line[i * 2 + 1] - in_line[i * 2 + 1 - dist * 2]) / (in_line[i * 2] - in_line[i * 2 - dist * 2]);
+                float d2 = (in_line[i * 2 + 1 + dist * 2] - in_line[i * 2 + 1]) / (in_line[i * 2 + dist * 2] - in_line[i * 2]);
+                float dd = (d2 - d1) / (in_line[i * 2 + dist * 2] - in_line[i * 2 - dist * 2]);
+                if (!dd)
+                    continue;
+                float rr = (1 + (d1 + d2) * (d1 + d2) / 4) * (1 + (d1 + d2) * (d1 + d2) / 4) * (1 + (d1 + d2) * (d1 + d2) / 4) / dd / dd;
+                // rr = sqrtf(rr);//rr保正
+                int t_point_x = (int)((4 * in_line[i * 2] - in_line[i * 2 - dist * 2] - in_line[i * 2 + dist * 2]) / 2);
+                int t_point_y = (int)((4 * in_line[i * 2 + 1] - in_line[i * 2 - dist * 2 + 1] - in_line[i * 2 + dist * 2 + 1]) / 2);
+                if ((rr < 100)) //&&(bin_image[t_point_x][t_point_y] == white_pixel))//白包黑角
+                {
                     return i;
+                }
             }
         }
-    }
-    if(orient == 1)
-        for (int i = num-dist; i > dist-1; i-=dist)//从大至小寻，对于八邻域边线即从顶向下，找高角
+    if (orient == 1)
+        for (int i = num - dist; i > dist - 1; i -= dist) // 从大至小寻，对于八邻域边线即从顶向下，找高角
         {
-            if((in_line[i*2] > 10)&&(in_line[i*2] < 178)&&(in_line[i*2+1] > hightest+20)&&(in_line[i*2+1] < 90))
-            {        //处理画面中心之点，忽略左右上下屏幕边缘
-                float d1 = (in_line[i*2+1]-in_line[i*2+1-dist*2])/(in_line[i*2]-in_line[i*2-dist*2]);
-                float d2 = (in_line[i*2+1+dist*2]-in_line[i*2+1])/(in_line[i*2+dist*2]-in_line[i*2]);
-                float dd = (d2-d1)/(in_line[i*2+dist*2]-in_line[i*2-dist*2]);
-                if(!dd) continue;
-                float rr = (1+(d1+d2)*(d1+d2)/4)*(1+(d1+d2)*(d1+d2)/4)*(1+(d1+d2)*(d1+d2)/4) / dd/dd;
-               // rr = sqrtf(rr);//rr保正
-                int t_point_x = (int)((4*in_line[i*2]-in_line[i*2-dist*2]-in_line[i*2+dist*2])/2);
-                int t_point_y = (int)((4*in_line[i*2+1]-in_line[i*2-dist*2+1]-in_line[i*2+dist*2+1])/2);
-                if((rr < 100))//&&(bin_image[t_point_x][t_point_y] == white_pixel))//白包黑角
+            if ((in_line[i * 2] > 10) && (in_line[i * 2] < 178) && (in_line[i * 2 + 1] > hightest + 20) && (in_line[i * 2 + 1] < 90))
+            { // 处理画面中心之点，忽略左右上下屏幕边缘
+                float d1 = (in_line[i * 2 + 1] - in_line[i * 2 + 1 - dist * 2]) / (in_line[i * 2] - in_line[i * 2 - dist * 2]);
+                float d2 = (in_line[i * 2 + 1 + dist * 2] - in_line[i * 2 + 1]) / (in_line[i * 2 + dist * 2] - in_line[i * 2]);
+                float dd = (d2 - d1) / (in_line[i * 2 + dist * 2] - in_line[i * 2 - dist * 2]);
+                if (!dd)
+                    continue;
+                float rr = (1 + (d1 + d2) * (d1 + d2) / 4) * (1 + (d1 + d2) * (d1 + d2) / 4) * (1 + (d1 + d2) * (d1 + d2) / 4) / dd / dd;
+                // rr = sqrtf(rr);//rr保正
+                int t_point_x = (int)((4 * in_line[i * 2] - in_line[i * 2 - dist * 2] - in_line[i * 2 + dist * 2]) / 2);
+                int t_point_y = (int)((4 * in_line[i * 2 + 1] - in_line[i * 2 - dist * 2 + 1] - in_line[i * 2 + dist * 2 + 1]) / 2);
+                if ((rr < 100)) //&&(bin_image[t_point_x][t_point_y] == white_pixel))//白包黑角
                 {
-                        return i;
+                    return i;
                 }
             }
         }
@@ -1124,37 +1135,39 @@ void image_process(void)
         //    printf("八邻域已结束\n");
         EdgeLinePerspective(&points_l, data_stastics_l, &beyond_trans_l, &beyond_matrix);
         EdgeLinePerspective(&points_r, data_stastics_r, &beyond_trans_r, &beyond_matrix);
-		lbc = corner_4points(&points_l, data_stastics_l, 5, 0);//左下角点
-		rbc = corner_4points(&points_r, data_stastics_r, 5, 0);
-		lhc = corner_4points(&beyond_trans_l, data_stastics_l, 5, 1);
-		rhc = corner_4points(&beyond_trans_r, data_stastics_l, 5, 1);
-		if (IfxCpu_acquireMutex(&screen_mutex))
-		{
-		    ips200_show_int(0,270,lbc,3);
-		    ips200_show_int(0,290,rbc,3);
-		    if(lbc){
-		        lbc_x = points_l[lbc][0];
-		        lbc_y = points_l[lbc][1];
-		        show_star(lbc_x,lbc_y);
-		    }
-		    IfxCpu_releaseMutex(&screen_mutex);
-		    if(rbc){
-		        rbc_x = points_r[rbc][0];
-		        rbc_y = points_r[rbc][1];
-		        show_star(rbc_x,rbc_y);
-		    }
-		    IfxCpu_releaseMutex(&screen_mutex);
+        lbc = corner_4points(&points_l, data_stastics_l, 5, 0); // 左下角点
+        rbc = corner_4points(&points_r, data_stastics_r, 5, 0);
+        lhc = corner_4points(&beyond_trans_l, data_stastics_l, 5, 1);
+        rhc = corner_4points(&beyond_trans_r, data_stastics_l, 5, 1);
+        if (IfxCpu_acquireMutex(&screen_mutex))
+        {
+            ips200_show_int(0, 270, lbc, 3);
+            ips200_show_int(0, 290, rbc, 3);
+            if (lbc)
+            {
+                lbc_x = points_l[lbc][0];
+                lbc_y = points_l[lbc][1];
+                show_star(lbc_x, lbc_y);
+            }
+            IfxCpu_releaseMutex(&screen_mutex);
+            if (rbc)
+            {
+                rbc_x = points_r[rbc][0];
+                rbc_y = points_r[rbc][1];
+                show_star(rbc_x, rbc_y);
+            }
+            IfxCpu_releaseMutex(&screen_mutex);
         }
-        //边线逆透视
+        // 边线逆透视
         EdgeLinePerspective(&points_l, data_stastics_l, &trans_l, &normal_matrix);
         EdgeLinePerspective(&points_r, data_stastics_r, &trans_r, &normal_matrix);
         // 从爬取的边界线并逆透视后内提取单行边线
         get_left(data_stastics_l);
         get_right(data_stastics_r);
         // 求中线
-        for (int i = image_h - lowest; i > hightest; i--)//从图底向上求
+        for (int i = image_h - lowest; i > hightest; i--) // 从图底向上求
         {
-            if (((l_border[i] > 5) && (r_border[i] < 180)))// ||my_abs((l_border[i]-r_border[i]) > 10))//避免回头弯中线求错
+            if (((l_border[i] > 5) && (r_border[i] < 180))) // ||my_abs((l_border[i]-r_border[i]) > 10))//避免回头弯中线求错
             {
                 center_line[i] = (l_border[i] + r_border[i]) >> 1; // 均分求中线
             }
@@ -1162,8 +1175,8 @@ void image_process(void)
     }
     // 元素的处理全部放在这里
     // 判别是否失去底边
-//    e_calcu_lenth = (image_h - 40)-(60);
-    foot_roadwidth = r_border[image_h - 2] - l_border[image_h - 2];//此为逆变换后路宽 
+    //    e_calcu_lenth = (image_h - 40)-(60);
+    foot_roadwidth = r_border[image_h - 2] - l_border[image_h - 2]; // 此为逆变换后路宽
     if (foot_roadwidth > standard_foot_roadwidth && xflg_now < 6)
         xflg_now++;
     else if (xflg_now > 0)
@@ -1171,77 +1184,77 @@ void image_process(void)
     if (xflg_now > 3) // xflg_now>3即三次连续超标，表明不为正常直道
     {
         // 如只能捕一个前角则为环，左右黑列均断为十字，只断一列则为大弯过度或环
-//        if((lhc) && (rhc))//十字直走（未考虑进环）
-//        {
-//        	for(int i = 0; i < e_calcu_lenth; i++)
-//        	center_line[hightest + 25 + i] = image_w / 2;
-//        	if (IfxCpu_acquireMutex(&screen_mutex))
-//        	{
-//        	    ips200_show_string(180, 250, "lf-cx");
-//        	    IfxCpu_releaseMutex(&screen_mutex);
-//            }
-//		}
-//        else
-//		{
-//			if(lhc)//需求左弯
-//			{
-//				for(int i = 0; i < e_calcu_lenth; i++)
-//        		center_line[hightest + 25 + i] = image_w / 2 + 5;
-//				if (IfxCpu_acquireMutex(&screen_mutex))
-//				{
-//				    ips200_show_string(180, 250, "lf-lt");
-//				    IfxCpu_releaseMutex(&screen_mutex);
-//			    }
-//			}
-//			if(rhc)//需求右弯
-//			{
-//				for(int i = 0; i < e_calcu_lenth; i++)
-//        		center_line[hightest + 25 + i] = image_w / 2 - 5;
-//				if (IfxCpu_acquireMutex(&screen_mutex))
-//			    {
-//				    ips200_show_string(180, 250, "lf-rt");
-//				    IfxCpu_releaseMutex(&screen_mutex);
-//			    }
-//			}
-//			if((!lhc)&&(!rhc))
-//			    if (IfxCpu_acquireMutex(&screen_mutex))
-//			    {
-//			        ips200_show_string(180, 250, "lf-uk");
-//			        IfxCpu_releaseMutex(&screen_mutex);
-//			    }
-//		}
+        //        if((lhc) && (rhc))//十字直走（未考虑进环）
+        //        {
+        //        	for(int i = 0; i < e_calcu_lenth; i++)
+        //        	center_line[hightest + 25 + i] = image_w / 2;
+        //        	if (IfxCpu_acquireMutex(&screen_mutex))
+        //        	{
+        //        	    ips200_show_string(180, 250, "lf-cx");
+        //        	    IfxCpu_releaseMutex(&screen_mutex);
+        //            }
+        //		}
+        //        else
+        //		{
+        //			if(lhc)//需求左弯
+        //			{
+        //				for(int i = 0; i < e_calcu_lenth; i++)
+        //        		center_line[hightest + 25 + i] = image_w / 2 + 5;
+        //				if (IfxCpu_acquireMutex(&screen_mutex))
+        //				{
+        //				    ips200_show_string(180, 250, "lf-lt");
+        //				    IfxCpu_releaseMutex(&screen_mutex);
+        //			    }
+        //			}
+        //			if(rhc)//需求右弯
+        //			{
+        //				for(int i = 0; i < e_calcu_lenth; i++)
+        //        		center_line[hightest + 25 + i] = image_w / 2 - 5;
+        //				if (IfxCpu_acquireMutex(&screen_mutex))
+        //			    {
+        //				    ips200_show_string(180, 250, "lf-rt");
+        //				    IfxCpu_releaseMutex(&screen_mutex);
+        //			    }
+        //			}
+        //			if((!lhc)&&(!rhc))
+        //			    if (IfxCpu_acquireMutex(&screen_mutex))
+        //			    {
+        //			        ips200_show_string(180, 250, "lf-uk");
+        //			        IfxCpu_releaseMutex(&screen_mutex);
+        //			    }
+        //		}
     }
-    else// 底边为正常直道，分辨前方环或十字或其他道干扰
+    else // 底边为正常直道，分辨前方环或十字或其他道干扰
     {
-//        if((lbc) && (rbc))//十字直走（未考虑进环）
-//        {
-//        	for(int i = 0; i < e_calcu_lenth; i++)
-//        	center_line[hightest + 25 + i] = image_w / 2;
-//        	if (IfxCpu_acquireMutex(&screen_mutex))
-//            {
-//        	    ips200_show_string(180, 250, "gf-cx");
-//        	    IfxCpu_releaseMutex(&screen_mutex);
-//            }
-//		}
-//		else
-//        {
-//        	if(circle_flag)//有环
-//			{
-//        	    if (IfxCpu_acquireMutex(&screen_mutex))
-//        	    {
-//        	        ips200_show_string(180, 250, "gf-ck");
-//        	        IfxCpu_releaseMutex(&screen_mutex);
-//        	    }
-//			}
-//        	else//直走
-//        	{
-//        	    if (IfxCpu_acquireMutex(&screen_mutex))
-//        	    {
-//        	        ips200_show_string(180, 250, "gf-st");
-//        	        IfxCpu_releaseMutex(&screen_mutex);
-//        	    }
-//        	}
-//		}
+        //        if((lbc) && (rbc))//十字直走（未考虑进环）
+        //        {
+        //        	for(int i = 0; i < e_calcu_lenth; i++)
+        //        	center_line[hightest + 25 + i] = image_w / 2;
+        //        	if (IfxCpu_acquireMutex(&screen_mutex))
+        //            {
+        //        	    ips200_show_string(180, 250, "gf-cx");
+        //        	    IfxCpu_releaseMutex(&screen_mutex);
+        //            }
+        //		}
+        //		else
+        //        {
+        //        	if(circle_flag)//有环
+        //			{
+        //        	    if (IfxCpu_acquireMutex(&screen_mutex))
+        //        	    {
+        //        	        ips200_show_string(180, 250, "gf-ck");
+        //        	        IfxCpu_releaseMutex(&screen_mutex);
+        //        	    }
+        //			}
+        //        	else//直走
+        //        	{
+        //        	    if (IfxCpu_acquireMutex(&screen_mutex))
+        //        	    {
+        //        	        ips200_show_string(180, 250, "gf-st");
+        //        	        IfxCpu_releaseMutex(&screen_mutex);
+        //        	    }
+        //        	}
+        //		}
     }
 
     error_calculate();

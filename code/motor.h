@@ -17,13 +17,13 @@ typedef struct
         float LastError;
         float PrevError;
 
-}PID_Datatypedef;
+} PID_Datatypedef;
 //---------function declaration----------
 extern void encoder_Read(void);
 extern void imu_Read(void);
 extern void motor_control(void);
-extern int MotorPID_Output(PID_Datatypedef*sptr,int NowSpeed,int ExpectSpeed);
-extern void PID_Init(PID_Datatypedef*sptr);
+extern int MotorPID_Output(PID_Datatypedef *sptr, int NowSpeed, int ExpectSpeed);
+extern void PID_Init(PID_Datatypedef *sptr);
 
 extern void print_angle(void);
 //---------data declaration------------

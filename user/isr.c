@@ -47,7 +47,7 @@ IFX_INTERRUPT(cc60_pit_ch0_isr, CCU6_0_CH0_INT_VECTAB_NUM, CCU6_0_CH0_ISR_PRIORI
     encoder_Read();
 
     motor_control();
-    imu_Read();
+
     pit_clear_flag(CCU60_CH0);
 
 }
@@ -57,8 +57,8 @@ IFX_INTERRUPT(cc60_pit_ch1_isr, CCU6_0_CH1_INT_VECTAB_NUM, CCU6_0_CH1_ISR_PRIORI
 {
     interrupt_global_enable(0);                     // 开启中断嵌套
 
-
-    image_process();
+    imu_Read();
+    // image_process();
 
     pit_clear_flag(CCU60_CH1);
 }
@@ -91,6 +91,7 @@ IFX_INTERRUPT(cc61_pit_ch0_isr, CCU6_1_CH0_INT_VECTAB_NUM, CCU6_1_CH0_ISR_PRIORI
                     case 3:
                         t_speed      = seekfree_assistant_parameter[3];
                         break;
+
                 }
                 //--------------通过DEBBUG串口发送信息
 //                printf("receive data channel : %d ", i);

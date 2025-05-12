@@ -44,7 +44,7 @@
 // 本例程是开源库空工程 可用作移植或者测试各类内外设
 
 // **************************** 代码区域 ****************************
-//void show_star(uint8 x, uint8 y)
+// void show_star(uint8 x, uint8 y)
 //{
 //    if ((x > 0) && (x < ips200_width_max-1) && (y > 0) && (y < ips200_height_max-1))
 //    ips200_draw_point((uint16)x, (uint16)y, uesr_GREEN);
@@ -61,41 +61,41 @@ void screen_show(void)
 {
     // 此处展示屏幕
     ips200_show_gray_image(0 + image_xmove, 0, original_image[0], image_w, image_h, image_w, image_h, 0);
-    //ips200_show_gray_image(0 + image_xmove, 125, bin_image_circlr[0], image_w, image_h, image_w, image_h, 0);
+    // ips200_show_gray_image(0 + image_xmove, 125, bin_image_circlr[0], image_w, image_h, image_w, image_h, 0);
     ips200_show_gray_image(0 + image_xmove, 125, bin_image[0], image_w, image_h, image_w, image_h, 0);
 
     ips200_show_string(0, 250, "ifstop:");
-    ips200_show_int(60,250,stop,3);
+    ips200_show_int(60, 250, stop, 3);
     //
-        ips200_show_string(0, 290, "lspeed:");
-        ips200_show_int(60,290,speed_l,3);
-        ips200_show_string(100, 290, "rspeed:");
-        ips200_show_int(160,290,speed_r,3);
+    ips200_show_string(0, 290, "lspeed:");
+    ips200_show_int(60, 290, speed_l, 3);
+    ips200_show_string(100, 290, "rspeed:");
+    ips200_show_int(160, 290, speed_r, 3);
     //
     ips200_show_string(90, 270, "error:");
-//    ips200_show_int(150,270,error,3);
+    ips200_show_int(150, 270, error, 3);
     //    ips200_show_string(100, 220, "dspeed:");
     //    ips200_show_int(160,220,d_speed,3);
     //
     ips200_show_string(0, 270, "tspd:");
-    ips200_show_int(50,270,target_speed,3);
-    ips200_show_int(70,270,t_speed,3);
-    if(xflg_now > 3)//xflg_now>3即三次连续超标，表明底线丢线
+    ips200_show_int(50, 270, target_speed, 3);
+    ips200_show_int(70, 270, t_speed, 3);
+    if (xflg_now > 3) // xflg_now>3即三次连续超标，表明底线丢线
     {
         ips200_show_string(100, 250, "losfoot");
     }
     else
     {
-            //底边未丢线，分辨前方是否出现丢线
+        // 底边未丢线，分辨前方是否出现丢线
         ips200_show_string(100, 250, "getfoot");
     }
-    ips200_draw_line(0 + image_xmove, (uint16)hightest, image_w + image_xmove, (uint16)hightest, RGB565_RED);//图片处理最高处（1）
-    ips200_draw_line(0 + image_xmove, (uint16)hightest + 125, image_w + image_xmove, (uint16)hightest + 125, RGB565_RED);//最高处（2）
-    ips200_draw_line(0 + image_xmove, (uint16)image_h - lowest, image_w + image_xmove, (uint16)image_h - lowest, RGB565_RED);//最低处（1）
-    ips200_draw_line(0 + image_xmove, (uint16)image_h - lowest + 125, image_w + image_xmove, (uint16)image_h - lowest + 125, RGB565_RED);//最低处（2）
+    ips200_draw_line(0 + image_xmove, (uint16)hightest, image_w + image_xmove, (uint16)hightest, RGB565_RED);                             // 图片处理最高处（1）
+    ips200_draw_line(0 + image_xmove, (uint16)hightest + 125, image_w + image_xmove, (uint16)hightest + 125, RGB565_RED);                 // 最高处（2）
+    ips200_draw_line(0 + image_xmove, (uint16)image_h - lowest, image_w + image_xmove, (uint16)image_h - lowest, RGB565_RED);             // 最低处（1）
+    ips200_draw_line(0 + image_xmove, (uint16)image_h - lowest + 125, image_w + image_xmove, (uint16)image_h - lowest + 125, RGB565_RED); // 最低处（2）
 
-    ips200_draw_line(0 + image_xmove, (uint16)TU_CIRCLE_Y_MIN+125, image_w + image_xmove, (uint16)TU_CIRCLE_Y_MIN+125, RGB565_BLUE);
-    ips200_draw_line(0 + image_xmove, (uint16)TU_CIRCLE_Y_MAX+125, image_w + image_xmove, (uint16)TU_CIRCLE_Y_MAX+125, RGB565_BLUE);
+    ips200_draw_line(0 + image_xmove, (uint16)TU_CIRCLE_Y_MIN + 125, image_w + image_xmove, (uint16)TU_CIRCLE_Y_MIN + 125, RGB565_BLUE);
+    ips200_draw_line(0 + image_xmove, (uint16)TU_CIRCLE_Y_MAX + 125, image_w + image_xmove, (uint16)TU_CIRCLE_Y_MAX + 125, RGB565_BLUE);
     for (int i = hightest; i < image_h - 1; i++)
     {
         if ((l_border[i] > 0) && ((l_border[i] + image_xmove) < (ips200_width_max - 1)))
@@ -123,7 +123,7 @@ void core2_main(void) // 负责屏幕显示
     disable_Watchdog();         // 关闭看门狗
     interrupt_global_enable(0); // 打开全局中断
     // 此处编写用户代码 例如外设初始化代码等
-    pit_ms_init(CCU60_CH0, 10);
+    // pit_ms_init(CCU60_CH0, 10);
     // 此处编写用户代码 例如外设初始化代码等
     cpu_wait_event_ready(); // 等待所有核心初始化完毕
     while (TRUE)
