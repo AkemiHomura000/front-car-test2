@@ -962,6 +962,7 @@ bool find_circle_area(void)
 example£º image_process();
 --------------------------------------------*/
 float error = 0;
+float error_test = 0;
 float error_last = 0;
 float err_kp = 5;
 float err_kd = 0.15;
@@ -979,11 +980,9 @@ void error_calculate(void)
         err_kd_now = err_kd;
         IfxCpu_releaseMutex(&param_mutex);
     }
-    error = 0;
+    // error = 0;
     // d_speed = 0;
     e_calcu_lenth = 1;
-    //    if((image_h - 5)>(hightest + 25))
-    //    {
     for (int i = image_h - 40; i > 60; i--)
     {
         if (center_line[i]) // && (my_abs(center_line[i]-center_line[i-1])<10))
@@ -995,20 +994,25 @@ void error_calculate(void)
             break;
     }
     error /= e_calcu_lenth;
+    if (IfxCpu_acquireMutex(&param_mutex))
+    {
+        // error = error_test;
+        // diff_speed = debug_diff_speed;
+        // turn_radius = debug_diff_speed;
+        // diff_speed = diff_speed_caculate(turn_radius);
+        // diff_speed = 0.0;
+        IfxCpu_releaseMutex(&param_mutex);
+    }
     //    }
-    if (IfxCpu_acquireMutex(&screen_mutex))
-    {
-        ips200_show_int(150, 270, error, 3);
-        IfxCpu_releaseMutex(&screen_mutex);
-    }
-    if (abs(error) <= 1 && abs(error_last) <= 1)
-    {
-        error = 0;
-    }
-    else if (abs(error) > 10)
-    {
-        error = 10;
-    }
+
+    // if (abs(error) <= 1 && abs(error_last) <= 1)
+    // {
+    //     error = 0;
+    // }
+    // else if (abs(error) > 10)
+    // {
+    //     error = 10;
+    // }
     kp = Maxmin(0.001 * error * error + err_kp_now, 0, 15); // ÏÞ¶È
     dspeed_now = Maxmin((kp * error + err_kd_now * (error - error_last)), -150, 150);
     if (IfxCpu_acquireMutex(&dspeed_mutex))

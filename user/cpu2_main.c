@@ -68,18 +68,22 @@ void screen_show(void)
     ips200_show_int(60, 250, stop, 3);
     //
     ips200_show_string(0, 290, "lspeed:");
-    ips200_show_int(60, 290, speed_l, 3);
+    ips200_show_float(60, 290, speed_l, 3, 1);
     ips200_show_string(100, 290, "rspeed:");
-    ips200_show_int(160, 290, speed_r, 3);
+    ips200_show_float(160, 290, speed_r, 3, 1);
     //
     ips200_show_string(90, 270, "error:");
-    ips200_show_int(150, 270, error, 3);
+    if (IfxCpu_acquireMutex(&dspeed_mutex))
+    {
+        ips200_show_float(150, 270, error, 1, 2);
+        IfxCpu_releaseMutex(&dspeed_mutex);
+    }
+
     //    ips200_show_string(100, 220, "dspeed:");
     //    ips200_show_int(160,220,d_speed,3);
     //
     ips200_show_string(0, 270, "tspd:");
-    ips200_show_int(50, 270, target_speed, 3);
-    ips200_show_int(70, 270, t_speed, 3);
+    ips200_show_float(50, 270, target_speed, 3, 1);
     if (xflg_now > 3) // xflg_now>3即三次连续超标，表明底线丢线
     {
         ips200_show_string(100, 250, "losfoot");

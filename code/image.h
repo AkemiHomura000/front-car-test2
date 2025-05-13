@@ -54,6 +54,7 @@ extern uint16 data_stastics_l;                   // 统计左边找到点的个数
 extern uint16 data_stastics_r;                   // 统计右边找到点的个数
 extern int d_speed;
 extern float error; // 误差值
+extern float error_test;
 extern float err_kp;
 extern float err_kd;
 extern int foot_roadwidth;

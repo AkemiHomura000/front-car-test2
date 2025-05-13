@@ -54,11 +54,11 @@ void core1_main(void) // 负责电机控制和上位机交流
     gpio_init(P21_5, GPO, GPIO_HIGH, GPO_PUSH_PULL); // 初始化 默认高电平 推挽输出模式 5对应左轮方向
     gpio_init(P21_3, GPO, GPIO_LOW, GPO_PUSH_PULL);  // 初始化 默认高电平 推挽输出模式 3对应右轮方向
 
-    pit_ms_init(CCU61_CH0, 50);
-    pit_ms_init(CCU60_CH0, 50);
-    pit_ms_init(CCU60_CH1, 10);
-    //    wireless_uart_init();
-    //    seekfree_assistant_interface_init(SEEKFREE_ASSISTANT_WIRELESS_UART);
+    pit_ms_init(CCU60_CH0, PIT_60_0_PERIOD);
+    pit_ms_init(CCU60_CH1, PIT_60_1_PERIOD);
+    pit_ms_init(CCU61_CH0, PIT_61_0_PERIOD);
+    // wireless_uart_init();
+    // seekfree_assistant_interface_init(SEEKFREE_ASSISTANT_WIRELESS_UART);
     seekfree_assistant_interface_init(SEEKFREE_ASSISTANT_DEBUG_UART);
 
     // 此处编写用户代码 例如外设初始化代码等

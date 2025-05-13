@@ -80,7 +80,7 @@ IFX_INTERRUPT(cc61_pit_ch0_isr, CCU6_1_CH0_INT_VECTAB_NUM, CCU6_1_CH0_ISR_PRIORI
                 //--------------更新内部参数
                 switch(i){
                     case 0:
-                        err_kp       = seekfree_assistant_parameter[0];
+                        error_test       = seekfree_assistant_parameter[0];
                         break;
                     case 1:
                         err_kd       = seekfree_assistant_parameter[1];
@@ -89,7 +89,19 @@ IFX_INTERRUPT(cc61_pit_ch0_isr, CCU6_1_CH0_INT_VECTAB_NUM, CCU6_1_CH0_ISR_PRIORI
                         stop         = seekfree_assistant_parameter[2];
                         break;
                     case 3:
-                        t_speed      = seekfree_assistant_parameter[3];
+                        debug_t_speed      = seekfree_assistant_parameter[3];
+                        break;
+                    case 4:
+                        debug_diff_speed      = seekfree_assistant_parameter[4];
+                        break;
+                    case 5:
+                        debug_p      = seekfree_assistant_parameter[5];
+                        break;
+                    case 6:
+                        debug_i      = seekfree_assistant_parameter[6];
+                        break;
+                    case 7:
+                        debug_d      = seekfree_assistant_parameter[7];
                         break;
 
                 }

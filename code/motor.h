@@ -18,21 +18,41 @@ typedef struct
         float PrevError;
 
 } PID_Datatypedef;
+typedef enum
+{
+        CIRCLE_NOT_FIND,
+        CIRCLE_FIND,
+        CIRCLE_IN,
+        CIRCLE_OUT
+} CIRCLE_STATE;
+typedef enum
+{
+        START,   // 从零开始起步
+        NORMAL   // 正常行驶
+} RUNNING_STATE; // 运行状态
 //---------function declaration----------
 extern void encoder_Read(void);
 extern void imu_Read(void);
 extern void motor_control(void);
-extern int MotorPID_Output(PID_Datatypedef *sptr, int NowSpeed, int ExpectSpeed);
+extern float MotorPID_Output(PID_Datatypedef *sptr, float NowSpeed, float ExpectSpeed);
 extern void PID_Init(PID_Datatypedef *sptr);
-
+extern float diff_speed_caculate(float turn_radius);
+extern float turn_radius_caculate(float image_error);
+extern void pwm_out_put();
 extern void print_angle(void);
+extern void update_status(void); // 更新出入环状态机
+extern float get_distance(void); // 获取距离
+extern float get_angle(void);    // 获取角度
+extern void running_state_update(void); // 更新运行状态
 //---------data declaration------------
-extern int16 target_speed_l;
-extern int16 target_speed_r;
-extern int16 target_speed;
-extern int16 t_speed;
-extern int16 speed_l;
-extern int16 speed_r;
+extern float target_speed_l;
+extern float target_speed_r;
+extern float target_speed;
+extern float debug_t_speed;
+extern float debug_diff_speed;
+extern float debug_p, debug_i, debug_d;
+extern float speed_l; // 单位 cm/s
+extern float speed_r; // 单位 cm/s
 extern bool stop;
 extern float angle_yaw;
 #endif /* CODE_MOTOR_H_ */

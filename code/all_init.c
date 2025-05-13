@@ -9,7 +9,7 @@
 #include "image.h"
 
 #define LED1 (P33_9) // 驱动红外灯
-PID_Datatypedef sptr_l, sptr_r;
+#define SWITCH2 (P33_12)
 void PWM_Init()
 {
     // gpio_init(P21_2, GPO, 0, GPI_FLOATING_IN);//电机转向初始化
@@ -18,15 +18,6 @@ void PWM_Init()
     // gpio_init(P21_4, GPO, 0, GPI_FLOATING_IN);
     pwm_init(ATOM0_CH0_P21_2, 20000, 1000);
     //    pwm_init (ATOM0_CH1_P21_3, 17*1000, 0);//正转pwm
-    PID_Init(&sptr_l);
-    PID_Init(&sptr_r);
-    sptr_l.P = 3.0;
-    sptr_l.I = 0.4;
-    sptr_l.D = 1.0;
-
-    sptr_r.P = sptr_l.P;
-    sptr_r.I = sptr_l.I;
-    sptr_r.D = sptr_l.D;
 }
 void encoder_Init()
 {
@@ -46,6 +37,8 @@ void imu_init()
 }
 void all_init()
 {
+    gpio_init(SWITCH2, GPI, GPIO_HIGH, GPI_PULL_UP); // 初始化 SWITCH2 输入 默认高电平 上拉输入
+
     PWM_Init();
     imu_init();
     encoder_Init();
