@@ -46,7 +46,7 @@ IFX_INTERRUPT(cc60_pit_ch0_isr, CCU6_0_CH0_INT_VECTAB_NUM, CCU6_0_CH0_ISR_PRIORI
     //于isr_config中定义为cpu2运行
     encoder_Read();
 
-    motor_control();
+
 
     pit_clear_flag(CCU60_CH0);
 
@@ -58,6 +58,7 @@ IFX_INTERRUPT(cc60_pit_ch1_isr, CCU6_0_CH1_INT_VECTAB_NUM, CCU6_0_CH1_ISR_PRIORI
     interrupt_global_enable(0);                     // 开启中断嵌套
 
     imu_Read();
+    motor_control();
     // image_process();
 
     pit_clear_flag(CCU60_CH1);
@@ -92,16 +93,16 @@ IFX_INTERRUPT(cc61_pit_ch0_isr, CCU6_1_CH0_INT_VECTAB_NUM, CCU6_1_CH0_ISR_PRIORI
                         debug_t_speed      = seekfree_assistant_parameter[3];
                         break;
                     case 4:
-                        debug_diff_speed      = seekfree_assistant_parameter[4];
+                        debug_angular_speed      = seekfree_assistant_parameter[4];
                         break;
                     case 5:
-                        debug_p      = seekfree_assistant_parameter[5];
+                        debug_angular_p      = seekfree_assistant_parameter[5];
                         break;
                     case 6:
-                        debug_i      = seekfree_assistant_parameter[6];
+                        debug_angular_i      = seekfree_assistant_parameter[6];
                         break;
                     case 7:
-                        debug_d      = seekfree_assistant_parameter[7];
+                        debug_angular_d      = seekfree_assistant_parameter[7];
                         break;
 
                 }

@@ -36,21 +36,22 @@ extern void imu_Read(void);
 extern void motor_control(void);
 extern float MotorPID_Output(PID_Datatypedef *sptr, float NowSpeed, float ExpectSpeed);
 extern void PID_Init(PID_Datatypedef *sptr);
-extern float diff_speed_caculate(float turn_radius);
-extern float turn_radius_caculate(float image_error);
 extern void pwm_out_put();
 extern void print_angle(void);
 extern void update_status(void); // 更新出入环状态机
 extern float get_distance(void); // 获取距离
 extern float get_angle(void);    // 获取角度
 extern void running_state_update(void); // 更新运行状态
+extern void line_speed_control(float target_line_speed, float current_line_speed);
+extern void angular_speed_control(float target_angular_speed, float current_angular_speed);
 //---------data declaration------------
 extern float target_speed_l;
 extern float target_speed_r;
 extern float target_speed;
 extern float debug_t_speed;
-extern float debug_diff_speed;
+extern float debug_angular_speed;
 extern float debug_p, debug_i, debug_d;
+extern float debug_angular_p, debug_angular_i, debug_angular_d;
 extern float speed_l; // 单位 cm/s
 extern float speed_r; // 单位 cm/s
 extern bool stop;
