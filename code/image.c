@@ -964,63 +964,59 @@ example： image_process();
 float error = 0;
 float error_test = 0;
 float error_last = 0;
-float err_kp = 5;
-float err_kd = 0.15;
+float err_kp = 13.10;
+float err_kd = 4.5;
 int d_speed = 0;       // 定义左右两轮的差速
 int e_calcu_lenth = 0; // 动态的误差计算范围
 int dspeed_now = 0;
 void error_calculate(void)
 {
-    float kp = 0; // 采用动态kp
-    float err_kp_now = 0;
-    float err_kd_now = 0;
+    float err_kp_now = 0.0f;
+    float err_kd_now = 0.0f;
+
+    // 1) 读取最新的 P、D 参数
     if (IfxCpu_acquireMutex(&param_mutex))
     {
         err_kp_now = err_kp;
         err_kd_now = err_kd;
         IfxCpu_releaseMutex(&param_mutex);
     }
-    // error = 0;
-    // d_speed = 0;
-    e_calcu_lenth = 1;
+
+    // 2) 计算平均误差
+    // error = 0.0f;
+    e_calcu_lenth = 0;
     for (int i = image_h - 40; i > 60; i--)
     {
-        if (center_line[i]) // && (my_abs(center_line[i]-center_line[i-1])<10))
+        if (center_line[i])
         {
-            error += (image_w / 2 - center_line[i]); // 预瞄点计算原始误差
+            error += (image_w / 2.0f - center_line[i]);
             e_calcu_lenth++;
         }
         else
+        {
             break;
+        }
     }
-    error /= e_calcu_lenth;
-    if (IfxCpu_acquireMutex(&param_mutex))
+    if (e_calcu_lenth > 0)
     {
-        // error = error_test;
-        // diff_speed = debug_diff_speed;
-        // turn_radius = debug_diff_speed;
-        // diff_speed = diff_speed_caculate(turn_radius);
-        // diff_speed = 0.0;
-        IfxCpu_releaseMutex(&param_mutex);
+        error /= e_calcu_lenth;
     }
-    //    }
 
-    // if (abs(error) <= 1 && abs(error_last) <= 1)
-    // {
-    //     error = 0;
-    // }
-    // else if (abs(error) > 10)
-    // {
-    //     error = 10;
-    // }
-    kp = Maxmin(0.001 * error * error + err_kp_now, 0, 15); // 限度
-    dspeed_now = Maxmin((kp * error + err_kd_now * (error - error_last)), -150, 150);
+    // 3) 用 P+D 计算输出差速
+    float delta_error = error - error_last;
+    float p_term = err_kp_now * error;
+    float d_term = err_kd_now * delta_error;
+    float dspeed_f = p_term + d_term;
+
+    // 限幅并写回全局 d_speed
+    int dspeed_i = Maxmin(dspeed_f, -150.0f, 150.0f);
     if (IfxCpu_acquireMutex(&dspeed_mutex))
     {
-        // d_speed = dspeed_now;
-        d_speed = (int)dspeed_now;
+        d_speed = dspeed_i;
         IfxCpu_releaseMutex(&dspeed_mutex);
     }
+
+    // 4) 保存本次误差，用于下次 D 项计算
     error_last = error;
 }
 void show_star(uint8 x, uint8 y)

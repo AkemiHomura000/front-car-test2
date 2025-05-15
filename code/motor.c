@@ -27,20 +27,20 @@ float debug_p = 10.0, debug_i = 5.0, debug_d = 3.0; // PID调试参数
 float speed_r;                                      // 右电机速度
 float speed_l;                                      // 左电机速度
 float line_speed = 0.0;                             // 质心线速度
-float target_speed = 70.0;
-float debug_t_speed = 70.0;
-#define PWM_PID_P 10.0
-#define PWM_PID_I 5.0
-#define PWM_PID_D 3.0
+float target_speed = 130.0;
+float debug_t_speed = 130.0;
+#define PWM_PID_P 16.0
+#define PWM_PID_I 2.0
+#define PWM_PID_D 20.0
 RUNNING_STATE running_state = START; // 运行状态
 // 角速度环
 PID_Datatypedef sptr_angular;
 float debug_angular_p = 0.0, debug_angular_i = 0.0, debug_angular_d = 0.0; // PID调试参数
 float debug_angular_speed = 0.0;
 float t_angular_speed = 0.0; // 目标角速度
-#define ANGULAR_PID_P 0.0
-#define ANGULAR_PID_I 0.0
-#define ANGULAR_PID_D 0.0
+#define ANGULAR_PID_P 25.0
+#define ANGULAR_PID_I 2.1
+#define ANGULAR_PID_D 14.0
 /* --------------------------------- 电机控制相关 --------------------------------- */
 #define WHEEL_BASE 0.155 // 确定 轮距
 /* ---------------------------------- 元素处理 ---------------------------------- */
@@ -50,6 +50,7 @@ float start_angle = 0.0;                     // 起始角度
 #define IN_CIRCLE_DISTANCE 0.2               // 进入环岛的距离
 #define IN_CIRCLE_ANGLE 45.0                 // 进入环岛的角度
 
+        int error_image = 0; // 误差
 // 电机控制函数
 void motor_control()
 {
@@ -75,9 +76,9 @@ void motor_control()
     {
         stop_now = stop;
         target_speed = debug_t_speed;
-        sptr_angular.P = debug_angular_p;
-        sptr_angular.I = debug_angular_i;
-        sptr_angular.D = debug_angular_d;
+        // sptr_line.P = debug_angular_p;
+        // sptr_line.I = debug_angular_i;
+        // sptr_line.D = debug_angular_d;
         IfxCpu_releaseMutex(&param_mutex);
     }
     bool switch2 = gpio_get_level(SWITCH2); // 获取开关状态
@@ -86,11 +87,12 @@ void motor_control()
         int16 pwm_r_add = 0; // 右电机PWM增量
         int16 pwm_l_add = 0; // 左电机PWM增量
 
-        // if (IfxCpu_acquireMutex(&dspeed_mutex))
-        // {
-        //     image_error = d_speed;
-        //     IfxCpu_releaseMutex(&dspeed_mutex);
-        // }
+
+        if (IfxCpu_acquireMutex(&dspeed_mutex))
+        {
+            error_image = d_speed;
+            IfxCpu_releaseMutex(&dspeed_mutex);
+        }
         // 读取上位机参数
         if (IfxCpu_acquireMutex(&param_mutex))
         {
@@ -98,7 +100,7 @@ void motor_control()
             target_speed = debug_t_speed;
             IfxCpu_releaseMutex(&param_mutex);
         }
-        angular_speed_control(t_angular_speed, yaw_speed); // 角速度环
+        angular_speed_control(error_image, yaw_speed); // 角速度环
         line_speed_control(target_speed, line_speed);      // 线速度环
 
         running_state_update(); // 更新运行状态,限制从零开始加速时的饱和值，防止过冲
@@ -137,7 +139,7 @@ void motor_control()
 void line_speed_control(float target_line_speed, float current_line_speed)
 {
     // 速度环
-    int16 pwm_line_add = MotorPID_Output(&sptr_line, current_line_speed, target_line_speed - current_line_speed);
+    int16 pwm_line_add = MotorPID_Output(&sptr_line, current_line_speed, target_line_speed);
     // 更新PWM值
     pwm_l += pwm_line_add;
     pwm_r += pwm_line_add;
@@ -145,10 +147,10 @@ void line_speed_control(float target_line_speed, float current_line_speed)
 void angular_speed_control(float target_angular_speed, float current_angular_speed)
 {
     // 角速度环
-    int16 pwm_angular_add = MotorPID_Output(&sptr_angular, current_angular_speed, target_angular_speed - current_angular_speed);
+    int16 pwm_angular_add = MotorPID_Output(&sptr_angular, current_angular_speed, target_angular_speed );
     // 更新PWM值
-    pwm_l += pwm_angular_add;
-    pwm_r -= pwm_angular_add;
+    pwm_l -= pwm_angular_add;
+    pwm_r += pwm_angular_add;
 }
 void pwm_out_put()
 {
