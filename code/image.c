@@ -816,16 +816,16 @@ void bfs(uint8 *image, int start_x, int start_y, int *sum_x, int *sum_y, int *co
     float l_ratio = (float)l_diff / *count;
     float r_ratio = (float)r_diff / *count;
     int min_diff = tu_min(l_diff, r_diff);
-
+    int diff_1 = abs(l_t_count - r_b_count);
+    int diff_2 = abs(r_t_count - l_b_count);
     //    printf("count=%d\n", *count);
     //    printf("l_ratio=%f\n", l_ratio);
     //    printf("r_ratio=%f\n", r_ratio);
-    // std::cout << "count=" << *count << std::endl;
-    // std::cout << "l_ratio=" << l_ratio << std::endl;
-    // std::cout << "r_ratio=" << r_ratio << std::endl;
 
     // 检查是否是有效区域
-    if (l_ratio > TU_MIN_DIFF_RATIO && r_ratio > TU_MIN_DIFF_RATIO && min_diff != 0 && abs(l_diff - r_diff) / min_diff < TU_MAX_L_R_DIFF_RATIO)
+    // if (l_ratio > TU_MIN_DIFF_RATIO && r_ratio > TU_MIN_DIFF_RATIO && min_diff != 0 && abs(l_diff - r_diff) / min_diff < TU_MAX_L_R_DIFF_RATIO)
+    if (diff_1 < 2 && diff_2 < 2 && min_diff != 0 && abs(l_diff - r_diff) / min_diff < TU_MAX_L_R_DIFF_RATIO)
+
     {
         // 满足条件，标记为有效区域
     }
@@ -889,9 +889,12 @@ bool find_circle(uint8 *image)
                 int sum_x = 0, sum_y = 0, count = 0;
                 int x_min = 0, x_max = 0, y_min = 0, y_max = 0;
                 bfs(image, x, y, &sum_x, &sum_y, &count, &x_min, &x_max, &y_min, &y_max);
+                if (count != 0)
+                    printf("count=%d\n", count);
+
                 if (count > TU_MIN_CIRCLE_COUNT && count < TU_MAX_CIRCLE_COUNT)
                 {
-                    printf("count=%d\n", count);
+                    // printf("count=%d\n", count);
                     int center_x = sum_x / count;
                     int center_y = sum_y / count;
                     draw_box(image, x_min, x_max, y_min, y_max); // 画框
@@ -900,16 +903,7 @@ bool find_circle(uint8 *image)
             }
         }
     }
-    if (find_circle)
-    {
-        // printf("find_circle \n");
-        return true;
-    }
-    else
-    {
-        // printf("not find_circle \n");
-        return false;
-    }
+    return find_circle;
     // printf("-\n");
     // draw_circle_range_line(image);
 }
@@ -923,7 +917,7 @@ bool find_circle_area(void)
         {
             for (int j = 0; j < image_w; j++)
             {
-                bin_image_circlr[i][j] = mt9v03x_image[i][j] > 100 ? 255 : 0;
+                bin_image_circlr[i][j] = bin_image[i][j];
             }
         }
         bool find = find_circle(bin_image_circlr[0]);
@@ -964,28 +958,28 @@ example： image_process();
 float error = 0;
 float error_test = 0;
 float error_last = 0;
-float err_kp = 13.10;
-float err_kd = 4.5;
+float err_kp = 33.5;
+float err_kd = 2.4;
 int d_speed = 0;       // 定义左右两轮的差速
 int e_calcu_lenth = 0; // 动态的误差计算范围
 int dspeed_now = 0;
 void error_calculate(void)
 {
-    float err_kp_now = 0.0f;
-    float err_kd_now = 0.0f;
+    float err_kp_now = err_kp;
+    float err_kd_now = err_kd;
 
     // 1) 读取最新的 P、D 参数
-    if (IfxCpu_acquireMutex(&param_mutex))
-    {
-        err_kp_now = err_kp;
-        err_kd_now = err_kd;
-        IfxCpu_releaseMutex(&param_mutex);
-    }
+    // if (IfxCpu_acquireMutex(&param_mutex))
+    // {
+    //     err_kp_now = err_kp;
+    //     err_kd_now = err_kd;
+    //     IfxCpu_releaseMutex(&param_mutex);
+    // }
 
     // 2) 计算平均误差
     // error = 0.0f;
     e_calcu_lenth = 0;
-    for (int i = image_h - 40; i > 60; i--)
+    for (int i = image_h - 20; i > 80; i--)
     {
         if (center_line[i])
         {

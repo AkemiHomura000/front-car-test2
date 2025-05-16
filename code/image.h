@@ -13,11 +13,11 @@
 #define TU_VISITED 127
 #define TU_QUEUE_SIZE (image_w * image_h)
 #define TU_BOX_COLOR 0
-#define TU_MIN_CIRCLE_COUNT 600     // 最小像素数量
+#define TU_MIN_CIRCLE_COUNT 300     // 最小像素数量
 #define TU_MAX_CIRCLE_COUNT 2000    // 最大像素数量
 #define TU_CIRCLE_Y_MIN 30          // 检测环岛的范围
-#define TU_CIRCLE_Y_MAX 90          // 检测环岛的范围
-#define TU_MIN_DIFF_RATIO 0.012f    // 最小差值比率
+#define TU_CIRCLE_Y_MAX 110          // 检测环岛的范围
+#define TU_MIN_DIFF_RATIO 0.0f    // 最小差值比率
 #define TU_MAX_L_R_DIFF_RATIO 0.35f // 左右差异比率
 // 颜色定义
 #define uesr_RED 0XF800   // 红色

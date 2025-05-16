@@ -74,13 +74,17 @@ void core1_main(void) // 负责电机控制和上位机交流
     //    oscilloscope_data.channel_num = 4;
     while (TRUE)
     {
-        //        bool circle = find_circle_area();
-        //        if (IfxCpu_acquireMutex(&screen_mutex))
-        //        {
-        //            ips200_show_string(160, 250, "circ:");
-        //            ips200_show_int(200,250,circle,3);
-        //            IfxCpu_releaseMutex(&screen_mutex);
-        //        }
+        // bool circle = find_circle_area();
+        // seekfree_assistant_oscilloscope_struct oscilloscope_data;
+        // oscilloscope_data.channel_num = 1;
+        // oscilloscope_data.data[0] = circle;
+        // seekfree_assistant_oscilloscope_send(&oscilloscope_data);
+        //    if (IfxCpu_acquireMutex(&screen_mutex))
+        //    {
+        //        ips200_show_string(160, 250, "circ:");
+        //        ips200_show_int(200,250,circle,3);
+        //        IfxCpu_releaseMutex(&screen_mutex);
+        //    }
         //        oscilloscope_data.data[0] = speed_l;
         //        oscilloscope_data.data[1] = speed_r;
         //        oscilloscope_data.data[2] = target_speed - d_speed;
