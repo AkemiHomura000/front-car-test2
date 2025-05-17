@@ -38,9 +38,9 @@ PID_Datatypedef sptr_angular;
 float debug_angular_p = 0.0, debug_angular_i = 0.0, debug_angular_d = 0.0; // PID调试参数
 float debug_angular_speed = 0.0;
 float t_angular_speed = 0.0; // 目标角速度
-#define ANGULAR_PID_P 25.0
+#define ANGULAR_PID_P 35.0
 #define ANGULAR_PID_I 2.1
-#define ANGULAR_PID_D 14.0
+#define ANGULAR_PID_D 20.0
 /* --------------------------------- 电机控制相关 --------------------------------- */
 #define WHEEL_BASE 0.155 // 确定 轮距
 /* ---------------------------------- 元素处理 ---------------------------------- */
@@ -117,17 +117,17 @@ void motor_control()
             pwm_r = limit_a_b(pwm_r, -3000, 3000);
         }
 
-        seekfree_assistant_oscilloscope_struct oscilloscope_data;
-        oscilloscope_data.channel_num = 8;
-        oscilloscope_data.data[0] = pwm_l;
-        oscilloscope_data.data[1] = pwm_r;
-        oscilloscope_data.data[2] = speed_l;
-        oscilloscope_data.data[3] = speed_r;
-        oscilloscope_data.data[4] = line_speed;
-        oscilloscope_data.data[5] = target_speed;
-        oscilloscope_data.data[6] = yaw_speed;
-        oscilloscope_data.data[7] = t_angular_speed;
-        seekfree_assistant_oscilloscope_send(&oscilloscope_data);
+//        seekfree_assistant_oscilloscope_struct oscilloscope_data;
+//        oscilloscope_data.channel_num = 8;
+//        oscilloscope_data.data[0] = pwm_l;
+//        oscilloscope_data.data[1] = pwm_r;
+//        oscilloscope_data.data[2] = speed_l;
+//        oscilloscope_data.data[3] = speed_r;
+//        oscilloscope_data.data[4] = line_speed;
+//        oscilloscope_data.data[5] = target_speed;
+//        oscilloscope_data.data[6] = yaw_speed;
+//        oscilloscope_data.data[7] = t_angular_speed;
+//        seekfree_assistant_oscilloscope_send(&oscilloscope_data);
     }
     else
     {
