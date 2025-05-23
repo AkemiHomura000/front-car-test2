@@ -908,11 +908,25 @@ bool find_circle(uint8 *image)
     // draw_circle_range_line(image);
 }
 bool circle_flag = false; // 是否找到环岛
+//判断左边界是不是直道
+// bool left_continue(void)
+// {
+//     int point_s=0;
+//     for(i=5;i<image_h;i++)
+//     if(abs(l_border(i)-l_border(i-1))<5)
+//          point_s++;
+//     if(point_s<5)
+//         return true;
+//     else
+//         return false;
+
+// }
 bool find_circle_area(void)
 {
     if (img_update)
     {
         // 把mt9v03x_image二值化后并保存到bin_image_circlr，此处手动设置阈值
+        
         for (int i = 0; i < image_h; i++)
         {
             for (int j = 0; j < image_w; j++)
@@ -1251,7 +1265,8 @@ void image_process(void)
         //		}
     }
 
-    error_calculate();
+//    error_calculate();
+    update_status();
 }
 
 /*

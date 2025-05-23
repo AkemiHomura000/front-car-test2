@@ -117,17 +117,17 @@ void motor_control()
             pwm_r = limit_a_b(pwm_r, -3000, 3000);
         }
 
-        seekfree_assistant_oscilloscope_struct oscilloscope_data;
-        oscilloscope_data.channel_num = 8;
-        oscilloscope_data.data[0] = pwm_l;
-        oscilloscope_data.data[1] = pwm_r;
-        oscilloscope_data.data[2] = speed_l;
-        oscilloscope_data.data[3] = speed_r;
-        oscilloscope_data.data[4] = line_speed;
-        oscilloscope_data.data[5] = target_speed;
-        oscilloscope_data.data[6] = yaw_speed;
-        oscilloscope_data.data[7] = t_angular_speed;
-        seekfree_assistant_oscilloscope_send(&oscilloscope_data);
+//        seekfree_assistant_oscilloscope_struct oscilloscope_data;
+//        oscilloscope_data.channel_num = 8;
+//        oscilloscope_data.data[0] = pwm_l;
+//        oscilloscope_data.data[1] = pwm_r;
+//        oscilloscope_data.data[2] = speed_l;
+//        oscilloscope_data.data[3] = speed_r;
+//        oscilloscope_data.data[4] = line_speed;
+//        oscilloscope_data.data[5] = target_speed;
+//        oscilloscope_data.data[6] = yaw_speed;
+//        oscilloscope_data.data[7] = t_angular_speed;
+//        seekfree_assistant_oscilloscope_send(&oscilloscope_data);
     }
     else
     {
@@ -251,36 +251,64 @@ float MotorPID_Output(PID_Datatypedef *sptr, float NowSpeed, float ExpectSpeed)
 
 void update_status(void) // 更新出入环状态机
 {
-    // switch (circle_state)
-    // {
-    // case CIRCLE_NOT_FIND:
-    //     if () // todo find circle
-    //     {
-    //         start_distance = encoder_distance;
-    //         start_angle = angle_yaw;
-    //         circle_state = CIRCLE_FIND;
-    //     }
-    //     break;
-    // case CIRCLE_FIND:
-    // {
-    //     float distance = encoder_distance - start_distance;
-    //     float angle = angle_yaw - start_angle;
-    //     // todo 控制姿态
-    //     if (distance > IN_CIRCLE_DISTANCE && angle > IN_CIRCLE_ANGLE)
-    //     {
-    //     }
-    // }
-    // break;
-    // case CIRCLE_IN:
-    // {
-    //     float angle = angle_yaw - start_angle;
-    //     if (angle > 180) // todo 控制姿态
-    // }
-    // break;
-    // case CIRCLE_OUT:
-    //     circle_state = CIRCLE_NOT_FIND;
-    //     break;
-    // }
+     switch (circle_state)
+     {
+     case CIRCLE_NOT_FIND:
+     {
+         if (circle_flag) // todo find circle
+         {
+
+             start_angle = angle_yaw;
+             if (IfxCpu_acquireMutex(&dspeed_mutex))
+                 {
+                     d_speed = 0;
+                     IfxCpu_releaseMutex(&dspeed_mutex);
+                 }
+                 system_delay_ms(550);
+             circle_state = CIRCLE_FIND;
+         }
+         else
+             error_calculate();
+     }
+         break;
+     case CIRCLE_FIND:
+     {
+//         float distance = encoder_distance - start_distance;
+//         float angle = angle_yaw - start_angle;
+//         // todo 控制姿态
+//         if (distance > IN_CIRCLE_DISTANCE && angle > IN_CIRCLE_ANGLE)
+//         {
+//         }
+         if (IfxCpu_acquireMutex(&dspeed_mutex))
+        {
+            d_speed = -150;
+            IfxCpu_releaseMutex(&dspeed_mutex);
+        }
+         system_delay_ms(500);
+         while((angle_yaw > (start_angle+3)) || (angle_yaw < (start_angle-3)));
+         circle_state = CIRCLE_IN;
+         start_distance = encoder_distance;
+     }
+     break;
+     case CIRCLE_IN:
+     {
+         float angle = angle_yaw - start_angle;
+         if (IfxCpu_acquireMutex(&dspeed_mutex))
+        {
+            d_speed = 1.5*angle;
+            IfxCpu_releaseMutex(&dspeed_mutex);
+        }
+         if (encoder_distance - start_distance > 100)
+             circle_state = CIRCLE_NOT_FIND;
+//         if (angle > 180) // todo 控制姿态
+     }
+     break;
+     case CIRCLE_OUT:
+     {
+         circle_state = CIRCLE_NOT_FIND;
+     }
+         break;
+     }
 }
 
 float get_distance(void) // 获取距离

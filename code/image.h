@@ -39,6 +39,7 @@ typedef struct corner_inline
 extern void image_process(void); // 直接在中断或循环里调用此程序就可以循环执行了
 extern bool find_circle_area(void);
 extern int16 limit_a_b(int16 x, int16 a, int16 b);
+extern void error_calculate(void);
 //---------data declaration------------
 extern IfxCpu_mutexLock screen_mutex;
 extern IfxCpu_mutexLock param_mutex;
@@ -63,5 +64,6 @@ extern uint8 cent_line_high; // 中线寻得最高点
 extern int xflg_now;
 extern corner_inline *l_corner_point;
 extern corner_inline *r_corner_point;
+extern bool circle_flag;
 
 #endif /* CODE_IMAGE_H_ */

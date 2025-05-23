@@ -64,24 +64,24 @@ void screen_show(void)
     // ips200_show_gray_image(0 + image_xmove, 125, bin_image_circlr[0], image_w, image_h, image_w, image_h, 0);
     ips200_show_gray_image(0 + image_xmove, 125, bin_image[0], image_w, image_h, image_w, image_h, 0);
 
-    ips200_show_string(0, 250, "ifstop:");
-    ips200_show_int(60, 250, stop, 3);
+    ips200_show_string(0, 250, "ifcirc:");
+//    ips200_show_int(60, 250, (int)circle_flag, 3);
     //
     ips200_show_string(0, 290, "lspeed:");
     ips200_show_float(60, 290, speed_l, 3, 1);
     ips200_show_string(100, 290, "rspeed:");
     ips200_show_float(160, 290, speed_r, 3, 1);
     //
-    ips200_show_string(90, 270, "error:");
-    if (IfxCpu_acquireMutex(&dspeed_mutex))
-    {
-        ips200_show_float(150, 270, error, 1, 2);
-        IfxCpu_releaseMutex(&dspeed_mutex);
-    }
+//    ips200_show_string(90, 270, "error:");
+//    if (IfxCpu_acquireMutex(&dspeed_mutex))
+//    {
+//        ips200_show_float(150, 270, error, 1, 2);
+//        IfxCpu_releaseMutex(&dspeed_mutex);
+//    }
 
-    //    ips200_show_string(100, 220, "dspeed:");
-    //    ips200_show_int(160,220,d_speed,3);
-    //
+        ips200_show_string(100, 270, "dspeed:");
+        ips200_show_int(160,270,d_speed,3);
+
     ips200_show_string(0, 270, "tspd:");
     ips200_show_float(50, 270, target_speed, 3, 1);
     if (xflg_now > 3) // xflg_now>3即三次连续超标，表明底线丢线
