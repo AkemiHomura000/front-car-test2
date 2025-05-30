@@ -65,5 +65,6 @@ extern int xflg_now;
 extern corner_inline *l_corner_point;
 extern corner_inline *r_corner_point;
 extern bool circle_flag;
+extern bool left_ctn;
 
 #endif /* CODE_IMAGE_H_ */

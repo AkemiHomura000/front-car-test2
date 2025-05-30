@@ -890,7 +890,7 @@ bool find_circle(uint8 *image)
                 int x_min = 0, x_max = 0, y_min = 0, y_max = 0;
                 bfs(image, x, y, &sum_x, &sum_y, &count, &x_min, &x_max, &y_min, &y_max);
                 if (count != 0)
-                    printf("count=%d\n", count);
+//                    printf("count=%d\n", count);
 
                 if (count > TU_MIN_CIRCLE_COUNT && count < TU_MAX_CIRCLE_COUNT)
                 {
@@ -909,18 +909,34 @@ bool find_circle(uint8 *image)
 }
 bool circle_flag = false; // 是否找到环岛
 //判断左边界是不是直道
-// bool left_continue(void)
-// {
-//     int point_s=0;
-//     for(i=5;i<image_h;i++)
-//     if(abs(l_border(i)-l_border(i-1))<5)
-//          point_s++;
-//     if(point_s<5)
+ bool left_continue(void)
+ {
+//     int point_s=0;//, point_avr;
+//     float k = (l_border[TU_CIRCLE_Y_MAX]-l_border[TU_CIRCLE_Y_MIN])/(TU_CIRCLE_Y_MAX-TU_CIRCLE_Y_MIN);
+////     for(int i=TU_CIRCLE_Y_MIN;i<TU_CIRCLE_Y_MAX;i++)
+////         point_avr += l_border[i];
+////     point_avr /= (TU_CIRCLE_Y_MAX-TU_CIRCLE_Y_MIN);
+//     for(int i=TU_CIRCLE_Y_MIN;i<TU_CIRCLE_Y_MAX;i++)
+//         if(my_abs(l_border[i]-(l_border[TU_CIRCLE_Y_MIN]+k*(i-TU_CIRCLE_Y_MIN)))>20)
+//             point_s++;
+//     if(point_s<40)
 //         return true;
 //     else
 //         return false;
 
-// }
+     for(int i=data_stastics_l-80;i<data_stastics_l-30;i++)
+     {
+         if(i<0)return 0;
+         if(points_l[i][0]<5)
+         {
+             return 0;
+             printf("left judge\r\n");
+         }
+
+     }
+     printf("left return\r\n");
+     return 1;
+ }
 bool find_circle_area(void)
 {
     if (img_update)
@@ -1103,6 +1119,7 @@ example： image_process();
 ----------------------------------------------------------------------------------------------*/
 int xflg_now = 0;
 int foot_roadwidth = 0;
+bool left_ctn = 0;
 void image_process(void)
 {
     img_update = true;
@@ -1124,6 +1141,7 @@ void image_process(void)
     memset(trans_r, 0, sizeof(beyond_trans_r));
     data_stastics_l = 0;
     data_stastics_r = 0;
+ //   left_ctn = 0;
     uint16 lbc_x = 0;
     uint16 lbc_y = 0;
     uint16 ltc_x = 0;
@@ -1172,6 +1190,7 @@ void image_process(void)
         // 从爬取的边界线并逆透视后内提取单行边线
         get_left(data_stastics_l);
         get_right(data_stastics_r);
+        left_ctn = left_continue();
         // 求中线
         for (int i = image_h - lowest; i > hightest; i--) // 从图底向上求
         {

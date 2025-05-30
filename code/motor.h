@@ -23,6 +23,7 @@ typedef enum
         CIRCLE_NOT_FIND,
         CIRCLE_FIND,
         CIRCLE_IN,
+        CIRCLE_END,
         CIRCLE_OUT
 } CIRCLE_STATE;
 typedef enum

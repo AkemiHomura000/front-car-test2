@@ -255,7 +255,7 @@ void update_status(void) // 更新出入环状态机
      {
      case CIRCLE_NOT_FIND:
      {
-         if (circle_flag) // todo find circle
+         if (left_ctn&&circle_flag) // todo find circle
          {
 
              start_angle = angle_yaw;
@@ -284,14 +284,25 @@ void update_status(void) // 更新出入环状态机
             d_speed = -150;
             IfxCpu_releaseMutex(&dspeed_mutex);
         }
+//         printf("case:1\r\n");
          system_delay_ms(500);
-         while((angle_yaw > (start_angle+3)) || (angle_yaw < (start_angle-3)));
          circle_state = CIRCLE_IN;
-         start_distance = encoder_distance;
      }
      break;
      case CIRCLE_IN:
      {
+         //printf("case:2\r\n");
+            if ((angle_yaw < (start_angle+3)) && (angle_yaw > (start_angle-3)))
+            {
+                start_distance = encoder_distance;
+                //printf("case:3\r\n");
+                circle_state = CIRCLE_END;
+            }
+     }
+     break;
+     case CIRCLE_END:
+     {
+         //printf("case:4\r\n");
          float angle = angle_yaw - start_angle;
          if (IfxCpu_acquireMutex(&dspeed_mutex))
         {
@@ -299,12 +310,12 @@ void update_status(void) // 更新出入环状态机
             IfxCpu_releaseMutex(&dspeed_mutex);
         }
          if (encoder_distance - start_distance > 100)
-             circle_state = CIRCLE_NOT_FIND;
-//         if (angle > 180) // todo 控制姿态
+             circle_state = CIRCLE_OUT;
      }
      break;
      case CIRCLE_OUT:
      {
+         //printf("case:5\r\n");
          circle_state = CIRCLE_NOT_FIND;
      }
          break;

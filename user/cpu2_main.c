@@ -79,8 +79,8 @@ void screen_show(void)
 //        IfxCpu_releaseMutex(&dspeed_mutex);
 //    }
 
-        ips200_show_string(100, 270, "dspeed:");
-        ips200_show_int(160,270,d_speed,3);
+        ips200_show_string(100, 270, "left:");
+        ips200_show_int(160,270,left_ctn,3);
 
     ips200_show_string(0, 270, "tspd:");
     ips200_show_float(50, 270, target_speed, 3, 1);
