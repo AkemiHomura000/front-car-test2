@@ -19,6 +19,22 @@
          <FileType>1</FileType>
          <ScrollPos>295</ScrollPos>
         </__.0>
+        <__.10>
+         <BookmarkList></BookmarkList>
+         <CaretPos>2031</CaretPos>
+         <Encoding>6</Encoding>
+         <FileName>W:\TU_SMART\front car test2\user\cpu0_main.c</FileName>
+         <FileType>1</FileType>
+         <ScrollPos>19</ScrollPos>
+        </__.10>
+        <__.11>
+         <BookmarkList></BookmarkList>
+         <CaretPos>0</CaretPos>
+         <Encoding>6</Encoding>
+         <FileName>W:\TU_SMART\front car test2\user\cpu1_main.c</FileName>
+         <FileType>1</FileType>
+         <ScrollPos>0</ScrollPos>
+        </__.11>
         <__.1>
          <BookmarkList></BookmarkList>
          <CaretPos>12027</CaretPos>
@@ -83,6 +99,14 @@
          <FileType>1</FileType>
          <ScrollPos>0</ScrollPos>
         </__.8>
+        <__.9>
+         <BookmarkList></BookmarkList>
+         <CaretPos>12027</CaretPos>
+         <Encoding>6</Encoding>
+         <FileName>W:\TU_SMART\front car test2\libraries\infineon_libraries\Infra\Ssw\TC37A\Tricore\Ifx_Ssw_Tc0.c</FileName>
+         <FileType>1</FileType>
+         <ScrollPos>299</ScrollPos>
+        </__.9>
        </EditorPersist>
       </EditorPersist>
      </REG_ROOT>

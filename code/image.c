@@ -207,7 +207,7 @@ uint8 otsuThreshold(uint8 *image, uint16 col, uint16 row)
 //  @brief      图像二值化，这里用的是大津法二值化。
 //  @since      v1.0
 //------------------------------------------------------------------------------------------------------------------
-uint8 threshold_add = 0;
+uint8 threshold_add = -10;
 void turn_to_bin(void)
 {
     uint8 i, j;
@@ -924,10 +924,11 @@ bool circle_flag = false; // 是否找到环岛
 //     else
 //         return false;
 
-     for(int i=data_stastics_l-80;i<data_stastics_l-30;i++)
+     for (int i = 30; i < data_stastics_l - 30; i++)
      {
-         if(i<0)return 0;
-         if(points_l[i][0]<5)
+         if (i < 0)
+             return 0;
+         if (points_l[i][0] < 30 && points_l[i][1] >= 40 && points_l[i][1] <= 80)
          {
              return 0;
              printf("left judge\r\n");

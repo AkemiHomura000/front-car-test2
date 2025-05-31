@@ -27,9 +27,9 @@ float debug_p = 10.0, debug_i = 5.0, debug_d = 3.0; // PID调试参数
 float speed_r;                                      // 右电机速度
 float speed_l;                                      // 左电机速度
 float line_speed = 0.0;                             // 质心线速度
-float target_speed = 130.0;
+float target_speed = 100.0;
 float debug_t_speed = 130.0;
-#define PWM_PID_P 16.0
+#define PWM_PID_P 30.0
 #define PWM_PID_I 2.0
 #define PWM_PID_D 20.0
 RUNNING_STATE running_state = START; // 运行状态
@@ -38,9 +38,9 @@ PID_Datatypedef sptr_angular;
 float debug_angular_p = 0.0, debug_angular_i = 0.0, debug_angular_d = 0.0; // PID调试参数
 float debug_angular_speed = 0.0;
 float t_angular_speed = 0.0; // 目标角速度
-#define ANGULAR_PID_P 25.0
+#define ANGULAR_PID_P 60.0
 #define ANGULAR_PID_I 2.1
-#define ANGULAR_PID_D 14.0
+#define ANGULAR_PID_D 20.0
 /* --------------------------------- 电机控制相关 --------------------------------- */
 #define WHEEL_BASE 0.155 // 确定 轮距
 /* ---------------------------------- 元素处理 ---------------------------------- */
@@ -253,71 +253,94 @@ void update_status(void) // 更新出入环状态机
 {
      switch (circle_state)
      {
-     case CIRCLE_NOT_FIND:
-     {
-         if (left_ctn&&circle_flag) // todo find circle
+         case CIRCLE_NOT_FIND:
          {
+             if (left_ctn&&circle_flag) // todo find circle
+             {
 
-             start_angle = angle_yaw;
-             if (IfxCpu_acquireMutex(&dspeed_mutex))
+                 start_angle = angle_yaw;
+                 if (IfxCpu_acquireMutex(&dspeed_mutex))
+                     {
+                         d_speed = 0;
+                         IfxCpu_releaseMutex(&dspeed_mutex);
+                     }
+                     system_delay_ms(550);
+                 circle_state = CIRCLE_FIND;
+             }
+             else if (!left_ctn && circle_flag)
+             {
+                 start_angle = angle_yaw;
+                 if (IfxCpu_acquireMutex(&dspeed_mutex))
                  {
-                     d_speed = 0;
-                     IfxCpu_releaseMutex(&dspeed_mutex);
-                 }
-                 system_delay_ms(550);
-             circle_state = CIRCLE_FIND;
+                      d_speed = 0;
+                      IfxCpu_releaseMutex(&dspeed_mutex);
+                  }
+                  system_delay_ms(500);
+                  circle_state = CROSS_FIND;
+             }
+             else
+                 error_calculate();
          }
-         else
-             error_calculate();
-     }
-         break;
-     case CIRCLE_FIND:
-     {
-//         float distance = encoder_distance - start_distance;
-//         float angle = angle_yaw - start_angle;
-//         // todo 控制姿态
-//         if (distance > IN_CIRCLE_DISTANCE && angle > IN_CIRCLE_ANGLE)
-//         {
-//         }
-         if (IfxCpu_acquireMutex(&dspeed_mutex))
-        {
-            d_speed = -150;
-            IfxCpu_releaseMutex(&dspeed_mutex);
-        }
-//         printf("case:1\r\n");
-         system_delay_ms(500);
-         circle_state = CIRCLE_IN;
-     }
-     break;
-     case CIRCLE_IN:
-     {
-         //printf("case:2\r\n");
-            if ((angle_yaw < (start_angle+3)) && (angle_yaw > (start_angle-3)))
+             break;
+         case CIRCLE_FIND:
+         {
+             if (IfxCpu_acquireMutex(&dspeed_mutex))
             {
-                start_distance = encoder_distance;
-                //printf("case:3\r\n");
-                circle_state = CIRCLE_END;
+                d_speed = -150;
+                IfxCpu_releaseMutex(&dspeed_mutex);
             }
-     }
-     break;
-     case CIRCLE_END:
-     {
-         //printf("case:4\r\n");
-         float angle = angle_yaw - start_angle;
-         if (IfxCpu_acquireMutex(&dspeed_mutex))
-        {
-            d_speed = 1.5*angle;
-            IfxCpu_releaseMutex(&dspeed_mutex);
-        }
-         if (encoder_distance - start_distance > 100)
-             circle_state = CIRCLE_OUT;
-     }
-     break;
-     case CIRCLE_OUT:
-     {
-         //printf("case:5\r\n");
-         circle_state = CIRCLE_NOT_FIND;
-     }
+             system_delay_ms(500);
+             circle_state = CIRCLE_IN;
+         }
+         break;
+         case CIRCLE_IN:
+         {
+                if ((angle_yaw < (start_angle+3)) && (angle_yaw > (start_angle-3)))
+                {
+                    start_distance = encoder_distance;
+                    circle_state = CIRCLE_END;
+                }
+         }
+         break;
+         case CIRCLE_END:
+         {
+             float angle = angle_yaw - start_angle;
+             if (IfxCpu_acquireMutex(&dspeed_mutex))
+            {
+                d_speed = 1.5*angle;
+                IfxCpu_releaseMutex(&dspeed_mutex);
+            }
+             if (encoder_distance - start_distance > 100)
+                 circle_state = CIRCLE_OUT;
+         }
+         break;
+         case CIRCLE_OUT:
+         {
+             //printf("case:5\r\n");
+             circle_state = CIRCLE_NOT_FIND;
+         }
+             break;
+         case CROSS_FIND:
+         {
+             error_calculate();
+             if ((angle_yaw < ((int)start_angle + 105) % 180) && (angle_yaw > ((int)start_angle + 95) % 180))
+            {
+                 start_distance = encoder_distance;
+                 circle_state = CROSS_OUT;
+              }
+          }
+           break;
+         case CROSS_OUT:
+         {
+             float angle = angle_yaw - start_angle;
+             if (IfxCpu_acquireMutex(&dspeed_mutex))
+              {
+                   d_speed = 1.5*angle;
+                   IfxCpu_releaseMutex(&dspeed_mutex);
+               }
+             if (encoder_distance - start_distance > 20)
+                 circle_state = CIRCLE_NOT_FIND;
+         }
          break;
      }
 }

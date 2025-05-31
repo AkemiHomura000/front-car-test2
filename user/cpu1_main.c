@@ -57,8 +57,8 @@ void core1_main(void) // 负责电机控制和上位机交流
     pit_ms_init(CCU60_CH0, PIT_60_0_PERIOD);
     pit_ms_init(CCU60_CH1, PIT_60_1_PERIOD);
     pit_ms_init(CCU61_CH0, PIT_61_0_PERIOD);
-    wireless_uart_init();
-    seekfree_assistant_interface_init(SEEKFREE_ASSISTANT_WIRELESS_UART);
+//    wireless_uart_init();
+//    seekfree_assistant_interface_init(SEEKFREE_ASSISTANT_WIRELESS_UART);
     // seekfree_assistant_interface_init(SEEKFREE_ASSISTANT_DEBUG_UART);
 
     // 此处编写用户代码 例如外设初始化代码等
