@@ -67,10 +67,10 @@ void screen_show(void)
     ips200_show_string(0, 250, "ifcirc:");
 //    ips200_show_int(60, 250, (int)circle_flag, 3);
     //
-    ips200_show_string(0, 290, "lspeed:");
-    ips200_show_float(60, 290, speed_l, 3, 1);
-    ips200_show_string(100, 290, "rspeed:");
-    ips200_show_float(160, 290, speed_r, 3, 1);
+//    ips200_show_string(0, 290, "lspeed:");
+//    ips200_show_float(60, 290, speed_l, 3, 1);
+//    ips200_show_string(100, 290, "rspeed:");
+//    ips200_show_float(160, 290, speed_r, 3, 1);
     //
 //    ips200_show_string(90, 270, "error:");
 //    if (IfxCpu_acquireMutex(&dspeed_mutex))

@@ -1142,16 +1142,12 @@ void image_process(void)
     memset(trans_r, 0, sizeof(beyond_trans_r));
     data_stastics_l = 0;
     data_stastics_r = 0;
- //   left_ctn = 0;
+//    left_ctn = 0;
     uint16 lbc_x = 0;
     uint16 lbc_y = 0;
-    uint16 ltc_x = 0;
-    uint16 ltc_y = 0;
     uint16 rbc_x = 0;
     uint16 rbc_y = 0;
-    uint16 rtc_x = 0;
-    uint16 rtc_y = 0;
-    int lbc, rbc, lhc, rhc;
+    int lbc, rbc;
 
     if (get_start_point(image_h - 2)) // 找到起点了，再执行八领域，没找到就一直找
     {
@@ -1160,30 +1156,26 @@ void image_process(void)
         if (hightest < hightest_least)
             hightest = hightest_least; // 最高边判定
         //    printf("八邻域已结束\n");
-        EdgeLinePerspective(&points_l, data_stastics_l, &beyond_trans_l, &beyond_matrix);
-        EdgeLinePerspective(&points_r, data_stastics_r, &beyond_trans_r, &beyond_matrix);
         lbc = corner_4points(&points_l, data_stastics_l, 5, 0); // 左下角点
         rbc = corner_4points(&points_r, data_stastics_r, 5, 0);
-        lhc = corner_4points(&beyond_trans_l, data_stastics_l, 5, 1);
-        rhc = corner_4points(&beyond_trans_r, data_stastics_l, 5, 1);
+        if (lbc && (points_l[lbc][1] > 30)&&(points_l[lbc][1]<100))
+                    {
+                        lbc_x = points_l[lbc][0];
+                        lbc_y = points_l[lbc][1];
+                        //show_star(lbc_x, lbc_y);
+                    }
+                    if (rbc && (points_r[rbc][1] > 30)&&(points_r[rbc][1]<100))
+                    {
+                        rbc_x = points_r[rbc][0];
+                        rbc_y = points_r[rbc][1];
+                       // show_star(rbc_x, rbc_y);
+                    }
         if (IfxCpu_acquireMutex(&screen_mutex))
         {
-            ips200_show_int(0, 270, lbc, 3);
-            ips200_show_int(0, 290, rbc, 3);
-            if (lbc)
-            {
-                lbc_x = points_l[lbc][0];
-                lbc_y = points_l[lbc][1];
-                show_star(lbc_x, lbc_y);
-            }
+            ips200_show_int(0, 290, lbc_y, 3);
+            ips200_show_int(40, 290, rbc_y, 3);
             IfxCpu_releaseMutex(&screen_mutex);
-            if (rbc)
-            {
-                rbc_x = points_r[rbc][0];
-                rbc_y = points_r[rbc][1];
-                show_star(rbc_x, rbc_y);
-            }
-            IfxCpu_releaseMutex(&screen_mutex);
+
         }
         // 边线逆透视
         EdgeLinePerspective(&points_l, data_stastics_l, &trans_l, &normal_matrix);
@@ -1286,6 +1278,16 @@ void image_process(void)
     }
 
 //    error_calculate();
+    if((rbc_y>70) && (lbc_y>70) && (my_abs(rbc_y-lbc_y)<8))
+    {
+        if (IfxCpu_acquireMutex(&dspeed_mutex))
+        {
+            d_speed = 0;
+            IfxCpu_releaseMutex(&dspeed_mutex);
+        }
+        system_delay_ms(500);
+    }
+    else
     update_status();
 }
 

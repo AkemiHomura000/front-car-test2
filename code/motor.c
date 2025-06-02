@@ -267,17 +267,17 @@ void update_status(void) // 更新出入环状态机
                      system_delay_ms(550);
                  circle_state = CIRCLE_FIND;
              }
-             else if (!left_ctn && circle_flag)
-             {
-                 start_angle = angle_yaw;
-                 if (IfxCpu_acquireMutex(&dspeed_mutex))
-                 {
-                      d_speed = 0;
-                      IfxCpu_releaseMutex(&dspeed_mutex);
-                  }
-                  system_delay_ms(500);
-                  circle_state = CROSS_FIND;
-             }
+//             else if (!left_ctn && circle_flag)
+//             {
+//                 start_angle = angle_yaw;
+//                 if (IfxCpu_acquireMutex(&dspeed_mutex))
+//                 {
+//                      d_speed = 0;
+//                      IfxCpu_releaseMutex(&dspeed_mutex);
+//                  }
+//                  system_delay_ms(500);
+//                  circle_state = CROSS_FIND;
+//             }
              else
                  error_calculate();
          }
@@ -295,10 +295,11 @@ void update_status(void) // 更新出入环状态机
          break;
          case CIRCLE_IN:
          {
-                if ((angle_yaw < (start_angle+3)) && (angle_yaw > (start_angle-3)))
+             error_calculate();
+                if ((angle_yaw < (start_angle+43)) && (angle_yaw > (start_angle+48)))
                 {
                     start_distance = encoder_distance;
-                    circle_state = CIRCLE_END;
+                    circle_state = CIRCLE_OUT;
                 }
          }
          break;
@@ -316,8 +317,16 @@ void update_status(void) // 更新出入环状态机
          break;
          case CIRCLE_OUT:
          {
-             //printf("case:5\r\n");
-             circle_state = CIRCLE_NOT_FIND;
+             if (IfxCpu_acquireMutex(&dspeed_mutex))
+             {
+                    d_speed = -150;
+                    IfxCpu_releaseMutex(&dspeed_mutex);
+                         }
+             if ((angle_yaw < (start_angle+3)) && (angle_yaw > (start_angle-3)))
+            {
+                    circle_state = CIRCLE_END;
+            }
+
          }
              break;
          case CROSS_FIND:
