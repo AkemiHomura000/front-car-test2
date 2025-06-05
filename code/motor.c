@@ -28,7 +28,7 @@ float speed_r;                                      // 右电机速度
 float speed_l;                                      // 左电机速度
 float line_speed = 0.0;                             // 质心线速度
 float target_speed = 100.0;
-float debug_t_speed = 130.0;
+float debug_t_speed = 100.0;
 #define PWM_PID_P 30.0
 #define PWM_PID_I 2.0
 #define PWM_PID_D 20.0
@@ -214,10 +214,10 @@ void imu_Read()
     }
     yaw_speed = data; // 角速度
     angle_yaw += data * 0.001 * PIT_60_1_PERIOD;
-    if (angle_yaw > 180)
-        angle_yaw -= 360;
-    else if (angle_yaw < -180)
-        angle_yaw += 360;
+//    if (angle_yaw > 180)
+//        angle_yaw -= 360;
+//    else if (angle_yaw < -180)
+//        angle_yaw += 360;
     // printf("angle_yaw:%f\r\n",angle_yaw);
 }
 
@@ -251,10 +251,15 @@ float MotorPID_Output(PID_Datatypedef *sptr, float NowSpeed, float ExpectSpeed)
 
 void update_status(void) // 更新出入环状态机
 {
-     switch (circle_state)
+    switch (circle_state)
      {
          case CIRCLE_NOT_FIND:
          {
+//             if (IfxCpu_acquireMutex(&screen_mutex))
+//                          {
+//                              ips200_show_string(80, 290, "cirN");
+//                              IfxCpu_releaseMutex(&screen_mutex);
+//                          }
              if (left_ctn&&circle_flag) // todo find circle
              {
 
@@ -264,7 +269,7 @@ void update_status(void) // 更新出入环状态机
                          d_speed = 0;
                          IfxCpu_releaseMutex(&dspeed_mutex);
                      }
-                     system_delay_ms(550);
+                     system_delay_ms(750);
                  circle_state = CIRCLE_FIND;
              }
 //             else if (!left_ctn && circle_flag)
@@ -289,41 +294,69 @@ void update_status(void) // 更新出入环状态机
                 d_speed = -150;
                 IfxCpu_releaseMutex(&dspeed_mutex);
             }
-             system_delay_ms(500);
+             system_delay_ms(900);
              circle_state = CIRCLE_IN;
          }
          break;
          case CIRCLE_IN:
          {
+//             if (IfxCpu_acquireMutex(&screen_mutex))
+//                          {
+//                              ips200_show_string(80, 290, "cirI");
+//                              IfxCpu_releaseMutex(&screen_mutex);
+//                          }
              error_calculate();
-                if ((angle_yaw < (start_angle+43)) && (angle_yaw > (start_angle+48)))
+                if ((angle_yaw < (int)(start_angle-280)) && (angle_yaw > (int)(start_angle-286)))
                 {
-                    start_distance = encoder_distance;
+
                     circle_state = CIRCLE_OUT;
                 }
          }
          break;
          case CIRCLE_END:
          {
-             float angle = angle_yaw - start_angle;
-             if (IfxCpu_acquireMutex(&dspeed_mutex))
-            {
-                d_speed = 1.5*angle;
-                IfxCpu_releaseMutex(&dspeed_mutex);
-            }
-             if (encoder_distance - start_distance > 100)
-                 circle_state = CIRCLE_OUT;
+//             float angle = angle_yaw - start_angle;
+//             if (IfxCpu_acquireMutex(&dspeed_mutex))
+//            {
+//                d_speed = -0.5*angle;
+//                IfxCpu_releaseMutex(&dspeed_mutex);
+//            }
+//             if (IfxCpu_acquireMutex(&screen_mutex))
+//             {
+//                 ips200_show_string(80, 290, "cirE");
+//                 IfxCpu_releaseMutex(&screen_mutex);
+//             }
+////
+//
+             goback();
+//             for (int i = hightest+1; i < image_h - lowest; i++) // 从图底向上求
+//            {
+//                 if (center_line[i]-center_line[i-1] > 3)
+//                 {
+//                     center_line[i] = center_line[i-1]; // 单靠左线求中线
+//                 }
+//            }
+                          error_calculate();
+             if (encoder_distance - start_distance > 60)
+                 circle_state = CIRCLE_NOT_FIND;
          }
          break;
          case CIRCLE_OUT:
          {
+//             if (IfxCpu_acquireMutex(&screen_mutex))
+//                          {
+//                              ips200_show_string(80, 290, "cirO");
+//                              IfxCpu_releaseMutex(&screen_mutex);
+//                          }
              if (IfxCpu_acquireMutex(&dspeed_mutex))
              {
-                    d_speed = -150;
+                    d_speed = -145;
                     IfxCpu_releaseMutex(&dspeed_mutex);
-                         }
-             if ((angle_yaw < (start_angle+3)) && (angle_yaw > (start_angle-3)))
+              }
+//             error_calculate();
+             if ((angle_yaw < ((int)start_angle-357)) && (angle_yaw > ((int)start_angle-363)))
             {
+                 start_distance = encoder_distance;
                     circle_state = CIRCLE_END;
             }
 

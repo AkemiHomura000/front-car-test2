@@ -59,4 +59,5 @@ extern float speed_l; // 单位 cm/s
 extern float speed_r; // 单位 cm/s
 extern bool stop;
 extern float angle_yaw;
+extern CIRCLE_STATE circle_state;
 #endif /* CODE_MOTOR_H_ */

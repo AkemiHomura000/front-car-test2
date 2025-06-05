@@ -1278,17 +1278,54 @@ void image_process(void)
     }
 
 //    error_calculate();
-    if((rbc_y>70) && (lbc_y>70) && (my_abs(rbc_y-lbc_y)<8))
-    {
-        if (IfxCpu_acquireMutex(&dspeed_mutex))
+    if((rbc_y>60) && (lbc_y>60) && (circle_state!=CIRCLE_IN))
+     {
+        if (IfxCpu_acquireMutex(&param_mutex))
         {
-            d_speed = 0;
-            IfxCpu_releaseMutex(&dspeed_mutex);
+            target_speed = 80;
+            IfxCpu_releaseMutex(&param_mutex);
         }
-        system_delay_ms(500);
+
+         int i = (rbc_x+lbc_x)/2;
+         int j = (rbc_y+lbc_y)/2;
+         int x_c = (int)((normal_matrix[0][0] * i + normal_matrix[0][1] * j + normal_matrix[0][2]) / (normal_matrix[2][0] * i + normal_matrix[2][1] * j + normal_matrix[2][2]));
+         for (int i = image_h - lowest; i > hightest; i--) // 从图底向上求
+         {
+             {
+                 center_line[i] = x_c; // 单靠角点求中线
+             }
+         }
+         error_calculate();
+         if((rbc_y>70) && (lbc_y>70)&& (rbc_y-lbc_y<8))
+         {
+             if (IfxCpu_acquireMutex(&dspeed_mutex))
+             {
+                 d_speed = 0;
+                 IfxCpu_releaseMutex(&dspeed_mutex);
+             }
+             system_delay_ms(1000);
+         }
+     }
+     else
+         update_status();
+}
+void goback(void)
+{
+    for (int i=0; i<data_stastics_r; i++)
+    {
+        points_r[i][0]=160-(160-94)*i/data_stastics_r;
+        points_r[i][1]=image_h-(image_h-0)*i/data_stastics_r;
     }
-    else
-    update_status();
+    EdgeLinePerspective(&points_r, data_stastics_r, &trans_r, &normal_matrix);
+    get_right(data_stastics_r);
+    for (int i = image_h - lowest; i > hightest; i--) // 从图底向上求
+            {
+                if (((l_border[i] > 5) && (r_border[i] < 180))) // ||my_abs((l_border[i]-r_border[i]) > 10))//避免回头弯中线求错
+                {
+                    center_line[i] = (l_border[i] + r_border[i]) >> 1; // 均分求中线
+                }
+                else center_line[i] = image_w/2;
+            }
 }
 
 /*
