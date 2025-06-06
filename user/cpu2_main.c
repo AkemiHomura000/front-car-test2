@@ -80,7 +80,9 @@ void screen_show(void)
 //    }
 
         ips200_show_string(100, 270, "left:");
-        ips200_show_int(160,270,left_ctn,3);
+        ips200_show_int(140,270,left_ctn,3);
+        ips200_show_string(160, 270, "r_l:");
+        ips200_show_int(190,270,data_stastics_r,3);
 
     ips200_show_string(0, 270, "tspd:");
     ips200_show_float(50, 270, target_speed, 3, 1);

@@ -823,7 +823,7 @@ void bfs(uint8 *image, int start_x, int start_y, int *sum_x, int *sum_y, int *co
     //    printf("r_ratio=%f\n", r_ratio);
 
     // 检查是否是有效区域
-    // if (l_ratio > TU_MIN_DIFF_RATIO && r_ratio > TU_MIN_DIFF_RATIO && min_diff != 0 && abs(l_diff - r_diff) / min_diff < TU_MAX_L_R_DIFF_RATIO)
+     if (l_ratio > TU_MIN_DIFF_RATIO && r_ratio > TU_MIN_DIFF_RATIO && min_diff != 0 && abs(l_diff - r_diff) / min_diff < TU_MAX_L_R_DIFF_RATIO)
     if (diff_1 < 2 && diff_2 < 2 && min_diff != 0 && abs(l_diff - r_diff) / min_diff < TU_MAX_L_R_DIFF_RATIO)
 
     {
@@ -890,7 +890,7 @@ bool find_circle(uint8 *image)
                 int x_min = 0, x_max = 0, y_min = 0, y_max = 0;
                 bfs(image, x, y, &sum_x, &sum_y, &count, &x_min, &x_max, &y_min, &y_max);
                 if (count != 0)
-//                    printf("count=%d\n", count);
+                    printf("count=%d\n", count);
 
                 if (count > TU_MIN_CIRCLE_COUNT && count < TU_MAX_CIRCLE_COUNT)
                 {
@@ -909,7 +909,7 @@ bool find_circle(uint8 *image)
 }
 bool circle_flag = false; // 是否找到环岛
 //判断左边界是不是直道
- bool left_continue(void)
+ bool left_continue(void)//6.6改为右
  {
 //     int point_s=0;//, point_avr;
 //     float k = (l_border[TU_CIRCLE_Y_MAX]-l_border[TU_CIRCLE_Y_MIN])/(TU_CIRCLE_Y_MAX-TU_CIRCLE_Y_MIN);
@@ -924,18 +924,20 @@ bool circle_flag = false; // 是否找到环岛
 //     else
 //         return false;
 
-     for (int i = 30; i < data_stastics_l - 30; i++)
+//     for (int i = 30; i < data_stastics_l - 30; i++)
+     for (int i = 30; i < data_stastics_r - 30; i++)
      {
          if (i < 0)
              return 0;
-         if (points_l[i][0] < 30 && points_l[i][1] >= 40 && points_l[i][1] <= 80)
+//         if (points_l[i][0] < 30 && points_l[i][1] >= 40 && points_l[i][1] <= 80)
+         if (points_r[i][0] > 155 && points_r[i][1] >= 40 && points_r[i][1] <= 80)
          {
              return 0;
-             printf("left judge\r\n");
+//             printf("left judge\r\n");
          }
 
      }
-     printf("left return\r\n");
+//     printf("left return\r\n");
      return 1;
  }
 bool find_circle_area(void)
@@ -994,6 +996,7 @@ float err_kd = 2.4;
 int d_speed = 0;       // 定义左右两轮的差速
 int e_calcu_lenth = 0; // 动态的误差计算范围
 int dspeed_now = 0;
+bool cross_state = 0;
 void error_calculate(void)
 {
     float err_kp_now = err_kp;
@@ -1278,46 +1281,100 @@ void image_process(void)
     }
 
 //    error_calculate();
-    if((rbc_y>60) && (lbc_y>60) && (circle_state!=CIRCLE_IN))
-     {
-        if (IfxCpu_acquireMutex(&param_mutex))
+    if(!cross_state)
+        if((rbc_y>50) && (lbc_y>50) && (circle_state!=CIRCLE_IN))
+         {
+            if (IfxCpu_acquireMutex(&param_mutex))
+            {
+                target_speed = 80;
+                IfxCpu_releaseMutex(&param_mutex);
+            }
+
+             int i = (rbc_x+lbc_x)/2;
+             int j = (rbc_y+lbc_y)/2;
+             int x_c = (int)((normal_matrix[0][0] * i + normal_matrix[0][1] * j + normal_matrix[0][2]) / (normal_matrix[2][0] * i + normal_matrix[2][1] * j + normal_matrix[2][2]));
+             for (int i = image_h - lowest; i > hightest; i--) // 从图底向上求
+             {
+                 {
+                     center_line[i] = x_c; // 单靠角点求中线
+                 }
+             }
+             error_calculate();
+//             cross_state = 1;
+             start_distance = encoder_distance;
+             if((rbc_y>75) && (lbc_y>75) && my_abs(rbc_y-lbc_y<10))
+             {
+//                 if (IfxCpu_acquireMutex(&dspeed_mutex))
+//                 {
+//                     d_speed = 0;
+//                     IfxCpu_releaseMutex(&dspeed_mutex);
+//                 }
+                 cross_state = 1;
+//                 system_delay_ms(120);
+             }
+         }
+        else
+         update_status();
+    else//十字内
+    {
+        float err_kp_now = err_kp;
+        float err_kd_now = err_kd;
+        e_calcu_lenth = 0;
+        for (int i = image_h - 20; i > 80; i--)
         {
-            target_speed = 80;
-            IfxCpu_releaseMutex(&param_mutex);
+            if (center_line[i])
+            {
+                error += (image_w / 2.0f - center_line[i]);
+                e_calcu_lenth++;
+            }
+            else
+            {
+                break;
+            }
+        }
+        if (e_calcu_lenth > 0)
+        {
+            error /= e_calcu_lenth;
         }
 
-         int i = (rbc_x+lbc_x)/2;
-         int j = (rbc_y+lbc_y)/2;
-         int x_c = (int)((normal_matrix[0][0] * i + normal_matrix[0][1] * j + normal_matrix[0][2]) / (normal_matrix[2][0] * i + normal_matrix[2][1] * j + normal_matrix[2][2]));
-         for (int i = image_h - lowest; i > hightest; i--) // 从图底向上求
-         {
-             {
-                 center_line[i] = x_c; // 单靠角点求中线
-             }
-         }
-         error_calculate();
-         if((rbc_y>70) && (lbc_y>70)&& (rbc_y-lbc_y<8))
-         {
-             if (IfxCpu_acquireMutex(&dspeed_mutex))
-             {
-                 d_speed = 0;
-                 IfxCpu_releaseMutex(&dspeed_mutex);
-             }
-             system_delay_ms(1000);
-         }
-     }
-     else
-         update_status();
+        // 3) 用 P+D 计算输出差速
+        float delta_error = error - error_last;
+        float p_term = err_kp_now * error;
+        float d_term = err_kd_now * delta_error;
+        float dspeed_f = (p_term + d_term)/200;
+
+        // 限幅并写回全局 d_speed
+        int dspeed_i = Maxmin(dspeed_f, -150.0f, 150.0f);
+        if (IfxCpu_acquireMutex(&dspeed_mutex))
+        {
+            d_speed = dspeed_i;
+            IfxCpu_releaseMutex(&dspeed_mutex);
+        }
+
+        // 4) 保存本次误差，用于下次 D 项计算
+        error_last = error;
+        if(encoder_distance - start_distance > 80)
+        {
+            cross_state = 0;
+        }
+    }
 }
 void goback(void)
 {
-    for (int i=0; i<data_stastics_r; i++)
+//    for (int i=0; i<data_stastics_r; i++)
+//    {
+//        points_r[i][0]=160-(160-94)*i/data_stastics_r;
+//        points_r[i][1]=image_h-(image_h-0)*i/data_stastics_r;
+//    }
+    for (int i=0; i<data_stastics_l; i++)
     {
-        points_r[i][0]=160-(160-94)*i/data_stastics_r;
-        points_r[i][1]=image_h-(image_h-0)*i/data_stastics_r;
+        points_l[i][0]=28+(94-28)*i/data_stastics_l;
+        points_l[i][1]=image_h-(image_h-0)*i/data_stastics_l;
     }
-    EdgeLinePerspective(&points_r, data_stastics_r, &trans_r, &normal_matrix);
-    get_right(data_stastics_r);
+//    EdgeLinePerspective(&points_r, data_stastics_r, &trans_r, &normal_matrix);
+//    get_right(data_stastics_r);
+    EdgeLinePerspective(&points_l, data_stastics_l, &trans_l, &normal_matrix);
+    get_right(data_stastics_l);
     for (int i = image_h - lowest; i > hightest; i--) // 从图底向上求
             {
                 if (((l_border[i] > 5) && (r_border[i] < 180))) // ||my_abs((l_border[i]-r_border[i]) > 10))//避免回头弯中线求错

@@ -38,7 +38,7 @@ PID_Datatypedef sptr_angular;
 float debug_angular_p = 0.0, debug_angular_i = 0.0, debug_angular_d = 0.0; // PID调试参数
 float debug_angular_speed = 0.0;
 float t_angular_speed = 0.0; // 目标角速度
-#define ANGULAR_PID_P 60.0
+float ANGULAR_PID_P = 60.0;
 #define ANGULAR_PID_I 2.1
 #define ANGULAR_PID_D 20.0
 /* --------------------------------- 电机控制相关 --------------------------------- */
@@ -248,28 +248,30 @@ float MotorPID_Output(PID_Datatypedef *sptr, float NowSpeed, float ExpectSpeed)
 
     return Increase;
 }
-
+int circ_num = 0;
 void update_status(void) // 更新出入环状态机
 {
+    bool switch1 = gpio_get_level(SWITCH1); // 获取开关状态,!sw2为发车走 sw2为停，sw1为走环 !sw1为不走环
     switch (circle_state)
      {
          case CIRCLE_NOT_FIND:
          {
-//             if (IfxCpu_acquireMutex(&screen_mutex))
-//                          {
-//                              ips200_show_string(80, 290, "cirN");
-//                              IfxCpu_releaseMutex(&screen_mutex);
-//                          }
-             if (left_ctn&&circle_flag) // todo find circle
+             if (IfxCpu_acquireMutex(&screen_mutex))
+                          {
+                              ips200_show_string(80, 290, "cirN");
+                              IfxCpu_releaseMutex(&screen_mutex);
+                          }
+             if (circle_flag&&(circ_num==0)&&(switch1)) // todo find circle&&(data_stastics_r > 135)left_ctn&&
              {
-
+                 circ_num++;
                  start_angle = angle_yaw;
                  if (IfxCpu_acquireMutex(&dspeed_mutex))
                      {
                          d_speed = 0;
                          IfxCpu_releaseMutex(&dspeed_mutex);
                      }
-                     system_delay_ms(750);
+//                 system_delay_ms(1050);//电院道合适
+                     system_delay_ms(950);//汽院道合适
                  circle_state = CIRCLE_FIND;
              }
 //             else if (!left_ctn && circle_flag)
@@ -291,7 +293,7 @@ void update_status(void) // 更新出入环状态机
          {
              if (IfxCpu_acquireMutex(&dspeed_mutex))
             {
-                d_speed = -150;
+                d_speed = 150;
                 IfxCpu_releaseMutex(&dspeed_mutex);
             }
              system_delay_ms(900);
@@ -300,13 +302,13 @@ void update_status(void) // 更新出入环状态机
          break;
          case CIRCLE_IN:
          {
-//             if (IfxCpu_acquireMutex(&screen_mutex))
-//                          {
-//                              ips200_show_string(80, 290, "cirI");
-//                              IfxCpu_releaseMutex(&screen_mutex);
-//                          }
+             if (IfxCpu_acquireMutex(&screen_mutex))
+                          {
+                              ips200_show_string(80, 290, "cirI");
+                              IfxCpu_releaseMutex(&screen_mutex);
+                          }
              error_calculate();
-                if ((angle_yaw < (int)(start_angle-280)) && (angle_yaw > (int)(start_angle-286)))
+                if ((angle_yaw < (int)(start_angle+276)) && (angle_yaw > (int)(start_angle+270)))
                 {
 
                     circle_state = CIRCLE_OUT;
@@ -321,11 +323,11 @@ void update_status(void) // 更新出入环状态机
 //                d_speed = -0.5*angle;
 //                IfxCpu_releaseMutex(&dspeed_mutex);
 //            }
-//             if (IfxCpu_acquireMutex(&screen_mutex))
-//             {
-//                 ips200_show_string(80, 290, "cirE");
-//                 IfxCpu_releaseMutex(&screen_mutex);
-//             }
+             if (IfxCpu_acquireMutex(&screen_mutex))
+             {
+                 ips200_show_string(80, 290, "cirE");
+                 IfxCpu_releaseMutex(&screen_mutex);
+             }
 ////
 //
              goback();
@@ -343,18 +345,18 @@ void update_status(void) // 更新出入环状态机
          break;
          case CIRCLE_OUT:
          {
-//             if (IfxCpu_acquireMutex(&screen_mutex))
-//                          {
-//                              ips200_show_string(80, 290, "cirO");
-//                              IfxCpu_releaseMutex(&screen_mutex);
-//                          }
+             if (IfxCpu_acquireMutex(&screen_mutex))
+                          {
+                              ips200_show_string(80, 290, "cirO");
+                              IfxCpu_releaseMutex(&screen_mutex);
+                          }
              if (IfxCpu_acquireMutex(&dspeed_mutex))
              {
-                    d_speed = -145;
+                    d_speed = 145;//145
                     IfxCpu_releaseMutex(&dspeed_mutex);
               }
 //             error_calculate();
-             if ((angle_yaw < ((int)start_angle-357)) && (angle_yaw > ((int)start_angle-363)))
+             if ((angle_yaw < ((int)start_angle+350)) && (angle_yaw > ((int)start_angle+345)))
             {
                  start_distance = encoder_distance;
                     circle_state = CIRCLE_END;
@@ -362,28 +364,7 @@ void update_status(void) // 更新出入环状态机
 
          }
              break;
-         case CROSS_FIND:
-         {
-             error_calculate();
-             if ((angle_yaw < ((int)start_angle + 105) % 180) && (angle_yaw > ((int)start_angle + 95) % 180))
-            {
-                 start_distance = encoder_distance;
-                 circle_state = CROSS_OUT;
-              }
-          }
-           break;
-         case CROSS_OUT:
-         {
-             float angle = angle_yaw - start_angle;
-             if (IfxCpu_acquireMutex(&dspeed_mutex))
-              {
-                   d_speed = 1.5*angle;
-                   IfxCpu_releaseMutex(&dspeed_mutex);
-               }
-             if (encoder_distance - start_distance > 20)
-                 circle_state = CIRCLE_NOT_FIND;
-         }
-         break;
+
      }
 }
 

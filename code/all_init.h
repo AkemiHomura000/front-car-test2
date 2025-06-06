@@ -14,6 +14,7 @@
 #define PIT_61_0_PERIOD 50 // 50ms 读取调试值
 //--------datatype declaration---------
 #define LED1 (P33_9) // 驱动红外灯
+#define SWITCH1 (P33_11)
 #define SWITCH2 (P33_12)
 //---------function declaration----------
 extern void all_init(void);

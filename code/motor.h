@@ -58,6 +58,9 @@ extern float debug_angular_p, debug_angular_i, debug_angular_d;
 extern float speed_l; // 单位 cm/s
 extern float speed_r; // 单位 cm/s
 extern bool stop;
+extern float ANGULAR_PID_P;
+extern float start_distance;
+extern float encoder_distance;
 extern float angle_yaw;
 extern CIRCLE_STATE circle_state;
 #endif /* CODE_MOTOR_H_ */
