@@ -23,10 +23,7 @@ typedef enum
         CIRCLE_NOT_FIND,
         CIRCLE_FIND,
         CIRCLE_IN,
-        CIRCLE_END,
         CIRCLE_OUT,
-        CROSS_FIND,
-        CROSS_OUT
 } CIRCLE_STATE;
 typedef enum
 {
@@ -59,4 +56,8 @@ extern float speed_l; // 单位 cm/s
 extern float speed_r; // 单位 cm/s
 extern bool stop;
 extern float angle_yaw;
+extern bool right_circle_find; // 是否找到右环岛
+extern bool left_circle_find; // 是否找到右环岛
+extern bool is_ready_to_turn_left; // 是否准备转向左环岛
+extern bool is_ready_to_turn_right; // 是否准备转向右环岛
 #endif /* CODE_MOTOR_H_ */

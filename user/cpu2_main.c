@@ -61,38 +61,29 @@ void screen_show(void)
 {
     // 此处展示屏幕
     ips200_show_gray_image(0 + image_xmove, 0, original_image[0], image_w, image_h, image_w, image_h, 0);
-    // ips200_show_gray_image(0 + image_xmove, 125, bin_image_circlr[0], image_w, image_h, image_w, image_h, 0);
     ips200_show_gray_image(0 + image_xmove, 125, bin_image[0], image_w, image_h, image_w, image_h, 0);
 
-    ips200_show_string(0, 250, "ifcirc:");
-//    ips200_show_int(60, 250, (int)circle_flag, 3);
-    //
-//    ips200_show_string(0, 290, "lspeed:");
-//    ips200_show_float(60, 290, speed_l, 3, 1);
-//    ips200_show_string(100, 290, "rspeed:");
-//    ips200_show_float(160, 290, speed_r, 3, 1);
-    //
-//    ips200_show_string(90, 270, "error:");
-//    if (IfxCpu_acquireMutex(&dspeed_mutex))
-//    {
-//        ips200_show_float(150, 270, error, 1, 2);
-//        IfxCpu_releaseMutex(&dspeed_mutex);
-//    }
+    ips200_show_string(100, 270, "left:");
+    ips200_show_int(160,270,left_ctn,3);
 
-        ips200_show_string(100, 270, "left:");
-        ips200_show_int(160,270,left_ctn,3);
+    ips200_show_string(0, 270, "right:");
+    ips200_show_int(50, 270, right_ctn, 3);
 
-    ips200_show_string(0, 270, "tspd:");
-    ips200_show_float(50, 270, target_speed, 3, 1);
-    if (xflg_now > 3) // xflg_now>3即三次连续超标，表明底线丢线
-    {
-        ips200_show_string(100, 250, "losfoot");
-    }
-    else
-    {
-        // 底边未丢线，分辨前方是否出现丢线
-        ips200_show_string(100, 250, "getfoot");
-    }
+    ips200_show_string(0, 250, "circle");
+    ips200_show_int(140, 250, right_circle_find, 3);
+    ips200_show_int(160, 250, is_ready_to_turn_right, 3);
+
+    // ips200_show_string(0, 250, "ifcirc:");
+    // if (xflg_now > 3) // xflg_now>3即三次连续超标，表明底线丢线
+    // {
+    //     ips200_show_string(100, 250, "losfoot");
+    // }
+    // else
+    // {
+    //     // 底边未丢线，分辨前方是否出现丢线
+    //     ips200_show_string(100, 250, "getfoot");
+    // }
+
     ips200_draw_line(0 + image_xmove, (uint16)hightest, image_w + image_xmove, (uint16)hightest, RGB565_RED);                             // 图片处理最高处（1）
     ips200_draw_line(0 + image_xmove, (uint16)hightest + 125, image_w + image_xmove, (uint16)hightest + 125, RGB565_RED);                 // 最高处（2）
     ips200_draw_line(0 + image_xmove, (uint16)image_h - lowest, image_w + image_xmove, (uint16)image_h - lowest, RGB565_RED);             // 最低处（1）

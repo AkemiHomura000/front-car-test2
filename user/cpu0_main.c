@@ -64,11 +64,7 @@ int core0_main(void) // 负责视觉处理
     cpu_wait_event_ready(); // 等待所有核心初始化完毕
     while (TRUE)
     {
-        // print_angle();
         image_process();
-//        circle_run();
-//        update_status();
-        // 此处编写需要循环执行的代码
     }
 }
 #pragma section all restore

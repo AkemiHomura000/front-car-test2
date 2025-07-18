@@ -249,109 +249,74 @@ float MotorPID_Output(PID_Datatypedef *sptr, float NowSpeed, float ExpectSpeed)
     return Increase;
 }
 
+int count_circle = 0; // 环岛计数
+int count_all = 0; // 总计数
+bool right_circle_find = false; // 是否找到环岛
+bool is_ready_to_turn_right = 0; // 是否准备转向右环岛
+bool left_circle_find = false; // 是否找到环岛
+bool is_ready_to_turn_left = 0; // 是否准备转向右环岛
+int turn_count = 0; // 环岛转向计数
+
 void update_status(void) // 更新出入环状态机
 {
-     switch (circle_state)
-     {
-         case CIRCLE_NOT_FIND:
-         {
-             if (left_ctn&&circle_flag) // todo find circle
-             {
-
-                 start_angle = angle_yaw;
-                 if (IfxCpu_acquireMutex(&dspeed_mutex))
-                     {
-                         d_speed = 0;
-                         IfxCpu_releaseMutex(&dspeed_mutex);
-                     }
-                     system_delay_ms(550);
-                 circle_state = CIRCLE_FIND;
-             }
-//             else if (!left_ctn && circle_flag)
-//             {
-//                 start_angle = angle_yaw;
-//                 if (IfxCpu_acquireMutex(&dspeed_mutex))
-//                 {
-//                      d_speed = 0;
-//                      IfxCpu_releaseMutex(&dspeed_mutex);
-//                  }
-//                  system_delay_ms(500);
-//                  circle_state = CROSS_FIND;
-//             }
-             else
-                 error_calculate();
-         }
-             break;
-         case CIRCLE_FIND:
-         {
-             if (IfxCpu_acquireMutex(&dspeed_mutex))
+    switch (circle_state)
+    {
+        case CIRCLE_NOT_FIND:
+        {
+            count_all = (count_all + 1) % 10;
+            if (left_ctn && !right_ctn) // todo find circle
+            {
+                count_circle = (count_circle + 1) % 10;
+                if(count_all == 9 && count_circle >= 4)
+                {
+                    count_circle = 0;
+                    right_circle_find = true;
+                }
+                if(right_circle_find)
+                {
+                    is_ready_to_turn_right = is_right_area();
+                    if(is_ready_to_turn_right){
+                        if(turn_count <= 1000){
+                            error_calculate();
+                            turn_count++;
+                        }
+                        else{
+//                            turn_count = 0;
+//                            is_ready_to_turn_right = 0;
+//                            start_angle = angle_yaw;
+//                            circle_state = CIRCLE_IN;
+                        }
+                    }
+                }
+            }
+            else {
+                error_calculate();
+            }
+            break;
+        }
+        case CIRCLE_IN:
+        {
+            error_calculate();
+            break;
+        }
+        case CIRCLE_OUT:
+        {
+            if (IfxCpu_acquireMutex(&dspeed_mutex))
             {
                 d_speed = -150;
                 IfxCpu_releaseMutex(&dspeed_mutex);
             }
-             system_delay_ms(500);
-             circle_state = CIRCLE_IN;
-         }
-         break;
-         case CIRCLE_IN:
-         {
-             error_calculate();
-                if ((angle_yaw < (start_angle+43)) && (angle_yaw > (start_angle+48)))
-                {
-                    start_distance = encoder_distance;
-                    circle_state = CIRCLE_OUT;
-                }
-         }
-         break;
-         case CIRCLE_END:
-         {
-             float angle = angle_yaw - start_angle;
-             if (IfxCpu_acquireMutex(&dspeed_mutex))
+            if ((angle_yaw < (start_angle+3)) && (angle_yaw > (start_angle-3)))
             {
-                d_speed = 1.5*angle;
-                IfxCpu_releaseMutex(&dspeed_mutex);
+                circle_state = CIRCLE_NOT_FIND;
             }
-             if (encoder_distance - start_distance > 100)
-                 circle_state = CIRCLE_OUT;
-         }
-         break;
-         case CIRCLE_OUT:
-         {
-             if (IfxCpu_acquireMutex(&dspeed_mutex))
-             {
-                    d_speed = -150;
-                    IfxCpu_releaseMutex(&dspeed_mutex);
-                         }
-             if ((angle_yaw < (start_angle+3)) && (angle_yaw > (start_angle-3)))
-            {
-                    circle_state = CIRCLE_END;
-            }
-
-         }
-             break;
-         case CROSS_FIND:
-         {
-             error_calculate();
-             if ((angle_yaw < ((int)start_angle + 105) % 180) && (angle_yaw > ((int)start_angle + 95) % 180))
-            {
-                 start_distance = encoder_distance;
-                 circle_state = CROSS_OUT;
-              }
-          }
-           break;
-         case CROSS_OUT:
-         {
-             float angle = angle_yaw - start_angle;
-             if (IfxCpu_acquireMutex(&dspeed_mutex))
-              {
-                   d_speed = 1.5*angle;
-                   IfxCpu_releaseMutex(&dspeed_mutex);
-               }
-             if (encoder_distance - start_distance > 20)
-                 circle_state = CIRCLE_NOT_FIND;
-         }
-         break;
-     }
+            break;
+        }
+        default:
+        {
+            break;
+        }
+    }
 }
 
 float get_distance(void) // 获取距离

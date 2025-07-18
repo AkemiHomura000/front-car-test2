@@ -216,10 +216,17 @@ void turn_to_bin(void)
     {
         for (j = 0; j < image_w; j++)
         {
-            if (original_image[i][j] > image_thereshold)
-                bin_image[i][j] = white_pixel;
-            else
+            if(is_ready_to_turn_right && i < image_h && j < image_w / 2)
                 bin_image[i][j] = black_pixel;
+            else if(is_ready_to_turn_left){
+
+            }
+            else{
+                if (original_image[i][j] > image_thereshold)
+                    bin_image[i][j] = white_pixel;
+                else
+                    bin_image[i][j] = black_pixel;
+            }
         }
     }
 }
@@ -554,6 +561,7 @@ void get_right(uint16 total_R)
             break; // 到最后一行退出
     }
 }
+
 // 定义膨胀和腐蚀的阈值区间
 #define threshold_max 255 * 5                  // 此参数可根据自己的需求调节
 #define threshold_min 255 * 2                  // 此参数可根据自己的需求调节
@@ -624,34 +632,17 @@ void EdgeLinePerspective(uint16 *in_line, uint8 num, uint16 *out_line, double *c
         out_line[count * 2 + 1] = solve_y;
     }
 }
-/**
- * @brief 检查坐标是否在图像范围内
- * @param x
- * @param y
- * @return true 在图像范围内
- * @return false 不在图像范围内
- */
+
 bool is_valid(int x, int y)
 {
     return (x >= 0 && x < image_w && y >= TU_CIRCLE_Y_MIN && y < TU_CIRCLE_Y_MAX);
 }
+
 int tu_min(int a, int b)
 {
     return (a < b) ? a : b;
 }
-/**
- * @brief 搜索连通的区域，找到后标记为TU_VISITED，当且仅当只有两个对角线的两个角有点时，才认为是有效区域，如果和图像边界相交，则不认为是有效区域
- * @param image
- * @param start_x
- * @param start_y
- * @param sum_x x坐标的和
- * @param sum_y y坐标的和
- * @param count 像素数量
- * @param x_min x坐标最小值
- * @param x_max x坐标最大值
- * @param y_min y坐标最小值
- * @param y_max y坐标最大值
- */
+
 void bfs(uint8 *image, int start_x, int start_y, int *sum_x, int *sum_y, int *count, int *x_min, int *x_max, int *y_min, int *y_max)
 {
     int queue_x[TU_QUEUE_SIZE], queue_y[TU_QUEUE_SIZE];
@@ -839,14 +830,7 @@ void bfs(uint8 *image, int start_x, int start_y, int *sum_x, int *sum_y, int *co
         *count = 0; // 直接标记此区域为无效
     }
 }
-/**
- * @brief 根据坐标画框
- * @param image
- * @param x_min
- * @param x_max
- * @param y_min
- * @param y_max
- */
+
 void draw_box(uint8 *image, int x_min, int x_max, int y_min, int y_max)
 {
     int left = (x_min < 0) ? 0 : x_min;
@@ -864,6 +848,7 @@ void draw_box(uint8 *image, int x_min, int x_max, int y_min, int y_max)
         image[j * image_w + right] = TU_BOX_COLOR; // 右边
     }
 }
+
 void draw_circle_range_line(uint8 *image)
 {
     for (uint16 i = 0; i < image_w; i++)
@@ -890,8 +875,6 @@ bool find_circle(uint8 *image)
                 int x_min = 0, x_max = 0, y_min = 0, y_max = 0;
                 bfs(image, x, y, &sum_x, &sum_y, &count, &x_min, &x_max, &y_min, &y_max);
                 if (count != 0)
-//                    printf("count=%d\n", count);
-
                 if (count > TU_MIN_CIRCLE_COUNT && count < TU_MAX_CIRCLE_COUNT)
                 {
                     // printf("count=%d\n", count);
@@ -904,40 +887,63 @@ bool find_circle(uint8 *image)
         }
     }
     return find_circle;
-    // printf("-\n");
-    // draw_circle_range_line(image);
 }
+
 bool circle_flag = false; // 是否找到环岛
+float thre = 15; //标准差阈值
 //判断左边界是不是直道
- bool left_continue(void)
- {
-//     int point_s=0;//, point_avr;
-//     float k = (l_border[TU_CIRCLE_Y_MAX]-l_border[TU_CIRCLE_Y_MIN])/(TU_CIRCLE_Y_MAX-TU_CIRCLE_Y_MIN);
-////     for(int i=TU_CIRCLE_Y_MIN;i<TU_CIRCLE_Y_MAX;i++)
-////         point_avr += l_border[i];
-////     point_avr /= (TU_CIRCLE_Y_MAX-TU_CIRCLE_Y_MIN);
-//     for(int i=TU_CIRCLE_Y_MIN;i<TU_CIRCLE_Y_MAX;i++)
-//         if(my_abs(l_border[i]-(l_border[TU_CIRCLE_Y_MIN]+k*(i-TU_CIRCLE_Y_MIN)))>20)
-//             point_s++;
-//     if(point_s<40)
-//         return true;
-//     else
-//         return false;
+bool left_continue(void)
+{
+    int sum = 0;
+    int count = 0;
+    for (int i = 0; i < data_stastics_l; i++)
+    {
+        if(trans_l[i][1] >= 10 && trans_l[i][1] <= 60)
+        {
+            sum += trans_l[i][0];
+            count++;
+        }
+    }
+    float average = sum / count;
+    sum = 0;
+    for (int i = 0; i < data_stastics_l; i++)
+    {
+        if(trans_l[i][1] >= 10 && trans_l[i][1] <= 60)
+        {
+            sum += (trans_l[i][0] - average) * (trans_l[i][0] - average);
+        }
+    }
+    sum /= count;
+    float std = sqrt(sum);
+    return (std > thre ? 0 : 1);
+}
 
-     for (int i = 30; i < data_stastics_l - 30; i++)
-     {
-         if (i < 0)
-             return 0;
-         if (points_l[i][0] < 30 && points_l[i][1] >= 40 && points_l[i][1] <= 80)
-         {
-             return 0;
-             printf("left judge\r\n");
-         }
+bool right_continue(void)
+{
+    int sum = 0;
+    int count = 0;
+    for (int i = 0; i < data_stastics_r; i++)
+    {
+        if(trans_r[i][1] >= 15 && trans_r[i][1] <= 60)
+        {
+            sum += trans_r[i][0];
+            count++;
+        }
+    }
+    float average = sum / count;
+    sum = 0;
+    for (int i = 0; i < data_stastics_r; i++)
+    {
+        if(trans_r[i][1] >= 15 && trans_r[i][1] <= 60)
+        {
+            sum += (trans_r[i][0] - average) * (trans_r[i][0] - average);
+        }
+    }
+    sum /= count;
+    float std = sqrt(sum);
+    return (std > thre ? 0 : 1);
+}
 
-     }
-     printf("left return\r\n");
-     return 1;
- }
 bool find_circle_area(void)
 {
     if (img_update)
@@ -977,6 +983,18 @@ bool find_circle_area(void)
     }
 }
 
+int a = image_h * 5/ 12;
+int b = image_w / 2;
+
+bool is_right_area(void){
+    int result1 = 0;
+    for(int i = 0; i < a; i++){
+        for(int j = 0; j < b; j++){
+            result1 += ((bin_image[image_h - a + i][image_w - b + j] == 255) ? 1 : 0);
+        }
+    }
+    return ((result1 >= (a * b * 85 / 100)) ? 1 : 0);
+}
 /*---------------------------------------
 函数名称：error_calculate(void)
 功能说明：计算原始误差，并计算左右轮参数
@@ -999,16 +1017,6 @@ void error_calculate(void)
     float err_kp_now = err_kp;
     float err_kd_now = err_kd;
 
-    // 1) 读取最新的 P、D 参数
-    // if (IfxCpu_acquireMutex(&param_mutex))
-    // {
-    //     err_kp_now = err_kp;
-    //     err_kd_now = err_kd;
-    //     IfxCpu_releaseMutex(&param_mutex);
-    // }
-
-    // 2) 计算平均误差
-    // error = 0.0f;
     e_calcu_lenth = 0;
     for (int i = image_h - 20; i > 80; i--)
     {
@@ -1044,6 +1052,7 @@ void error_calculate(void)
     // 4) 保存本次误差，用于下次 D 项计算
     error_last = error;
 }
+
 void show_star(uint8 x, uint8 y)
 {
     if ((x > 0) && (x < ips200_width_max - 1) && (y > 0) && (y < ips200_height_max - 1))
@@ -1078,10 +1087,9 @@ int corner_4points(uint16 *in_line, int num, int dist, bool orient)
                 if (!dd)
                     continue;
                 float rr = (1 + (d1 + d2) * (d1 + d2) / 4) * (1 + (d1 + d2) * (d1 + d2) / 4) * (1 + (d1 + d2) * (d1 + d2) / 4) / dd / dd;
-                // rr = sqrtf(rr);//rr保正
                 int t_point_x = (int)((4 * in_line[i * 2] - in_line[i * 2 - dist * 2] - in_line[i * 2 + dist * 2]) / 2);
                 int t_point_y = (int)((4 * in_line[i * 2 + 1] - in_line[i * 2 - dist * 2 + 1] - in_line[i * 2 + dist * 2 + 1]) / 2);
-                if ((rr < 100)) //&&(bin_image[t_point_x][t_point_y] == white_pixel))//白包黑角
+                if ((rr < 100))
                 {
                     return i;
                 }
@@ -1098,10 +1106,9 @@ int corner_4points(uint16 *in_line, int num, int dist, bool orient)
                 if (!dd)
                     continue;
                 float rr = (1 + (d1 + d2) * (d1 + d2) / 4) * (1 + (d1 + d2) * (d1 + d2) / 4) * (1 + (d1 + d2) * (d1 + d2) / 4) / dd / dd;
-                // rr = sqrtf(rr);//rr保正
                 int t_point_x = (int)((4 * in_line[i * 2] - in_line[i * 2 - dist * 2] - in_line[i * 2 + dist * 2]) / 2);
                 int t_point_y = (int)((4 * in_line[i * 2 + 1] - in_line[i * 2 - dist * 2 + 1] - in_line[i * 2 + dist * 2 + 1]) / 2);
-                if ((rr < 100)) //&&(bin_image[t_point_x][t_point_y] == white_pixel))//白包黑角
+                if ((rr < 100))
                 {
                     return i;
                 }
@@ -1121,6 +1128,7 @@ example： image_process();
 int xflg_now = 0;
 int foot_roadwidth = 0;
 bool left_ctn = 0;
+bool right_ctn = 0;
 void image_process(void)
 {
     img_update = true;
@@ -1184,6 +1192,7 @@ void image_process(void)
         get_left(data_stastics_l);
         get_right(data_stastics_r);
         left_ctn = left_continue();
+        right_ctn = right_continue();
         // 求中线
         for (int i = image_h - lowest; i > hightest; i--) // 从图底向上求
         {
@@ -1201,83 +1210,7 @@ void image_process(void)
         xflg_now++;
     else if (xflg_now > 0)
         xflg_now--;
-    if (xflg_now > 3) // xflg_now>3即三次连续超标，表明不为正常直道
-    {
-        // 如只能捕一个前角则为环，左右黑列均断为十字，只断一列则为大弯过度或环
-        //        if((lhc) && (rhc))//十字直走（未考虑进环）
-        //        {
-        //        	for(int i = 0; i < e_calcu_lenth; i++)
-        //        	center_line[hightest + 25 + i] = image_w / 2;
-        //        	if (IfxCpu_acquireMutex(&screen_mutex))
-        //        	{
-        //        	    ips200_show_string(180, 250, "lf-cx");
-        //        	    IfxCpu_releaseMutex(&screen_mutex);
-        //            }
-        //		}
-        //        else
-        //		{
-        //			if(lhc)//需求左弯
-        //			{
-        //				for(int i = 0; i < e_calcu_lenth; i++)
-        //        		center_line[hightest + 25 + i] = image_w / 2 + 5;
-        //				if (IfxCpu_acquireMutex(&screen_mutex))
-        //				{
-        //				    ips200_show_string(180, 250, "lf-lt");
-        //				    IfxCpu_releaseMutex(&screen_mutex);
-        //			    }
-        //			}
-        //			if(rhc)//需求右弯
-        //			{
-        //				for(int i = 0; i < e_calcu_lenth; i++)
-        //        		center_line[hightest + 25 + i] = image_w / 2 - 5;
-        //				if (IfxCpu_acquireMutex(&screen_mutex))
-        //			    {
-        //				    ips200_show_string(180, 250, "lf-rt");
-        //				    IfxCpu_releaseMutex(&screen_mutex);
-        //			    }
-        //			}
-        //			if((!lhc)&&(!rhc))
-        //			    if (IfxCpu_acquireMutex(&screen_mutex))
-        //			    {
-        //			        ips200_show_string(180, 250, "lf-uk");
-        //			        IfxCpu_releaseMutex(&screen_mutex);
-        //			    }
-        //		}
-    }
-    else // 底边为正常直道，分辨前方环或十字或其他道干扰
-    {
-        //        if((lbc) && (rbc))//十字直走（未考虑进环）
-        //        {
-        //        	for(int i = 0; i < e_calcu_lenth; i++)
-        //        	center_line[hightest + 25 + i] = image_w / 2;
-        //        	if (IfxCpu_acquireMutex(&screen_mutex))
-        //            {
-        //        	    ips200_show_string(180, 250, "gf-cx");
-        //        	    IfxCpu_releaseMutex(&screen_mutex);
-        //            }
-        //		}
-        //		else
-        //        {
-        //        	if(circle_flag)//有环
-        //			{
-        //        	    if (IfxCpu_acquireMutex(&screen_mutex))
-        //        	    {
-        //        	        ips200_show_string(180, 250, "gf-ck");
-        //        	        IfxCpu_releaseMutex(&screen_mutex);
-        //        	    }
-        //			}
-        //        	else//直走
-        //        	{
-        //        	    if (IfxCpu_acquireMutex(&screen_mutex))
-        //        	    {
-        //        	        ips200_show_string(180, 250, "gf-st");
-        //        	        IfxCpu_releaseMutex(&screen_mutex);
-        //        	    }
-        //        	}
-        //		}
-    }
 
-//    error_calculate();
     if((rbc_y>70) && (lbc_y>70) && (my_abs(rbc_y-lbc_y)<8))
     {
         if (IfxCpu_acquireMutex(&dspeed_mutex))
