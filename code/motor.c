@@ -2,6 +2,7 @@
 #include "motor.h"
 #include "all_init.h"
 #include "image.h"
+#include <math.h>
 
 /* ---------------------------------- imu相关 --------------------------------- */
 float angle_yaw = 0;       // 角度
@@ -48,7 +49,7 @@ CIRCLE_STATE circle_state = CIRCLE_NOT_FIND; // 环岛状态
 float start_distance = 0.0;                  // 起始距离
 float start_angle = 0.0;                     // 起始角度
 #define IN_CIRCLE_DISTANCE 0.2               // 进入环岛的距离
-#define IN_CIRCLE_ANGLE 45.0                 // 进入环岛的角度
+
 
         int error_image = 0; // 误差
 // 电机控制函数
@@ -248,14 +249,19 @@ float MotorPID_Output(PID_Datatypedef *sptr, float NowSpeed, float ExpectSpeed)
 
     return Increase;
 }
-
-int count_circle = 0; // 环岛计数
+int count_left_circle = 0; // 左环岛计数
+int count_right_circle = 0; // 右环岛计数
 int count_all = 0; // 总计数
 bool right_circle_find = false; // 是否找到环岛
 bool is_ready_to_turn_right = 0; // 是否准备转向右环岛
 bool left_circle_find = false; // 是否找到环岛
 bool is_ready_to_turn_left = 0; // 是否准备转向右环岛
-int turn_count = 0; // 环岛转向计数
+bool start = false;
+bool start1 = false;
+float start_point = 0.0; // 起始点
+#define IN_CIRCLE_ANGLE 40.0                 // 进入环岛的角度
+#define OUT_CIRCLE_ANGLE 300.0 // 出环岛角度
+#define BACK_TO_STRAIGHT_ANGLE 20.0 // 回正角度
 
 void update_status(void) // 更新出入环状态机
 {
@@ -266,26 +272,63 @@ void update_status(void) // 更新出入环状态机
             count_all = (count_all + 1) % 10;
             if (left_ctn && !right_ctn) // todo find circle
             {
-                count_circle = (count_circle + 1) % 10;
-                if(count_all == 9 && count_circle >= 4)
+                count_right_circle = (count_right_circle + 1) % 10;
+                if(count_all == 9 && count_right_circle >= 4)
                 {
-                    count_circle = 0;
+                    count_right_circle = 0;
                     right_circle_find = true;
                 }
                 if(right_circle_find)
                 {
-                    is_ready_to_turn_right = is_right_area();
                     if(is_ready_to_turn_right){
-                        if(turn_count <= 1000){
+                        if(!start){
+                            start = 1;
+                            is_ready_to_turn_left = 0;
+                            start_angle = (((angle_yaw + 360) > 360) ? angle_yaw : (angle_yaw + 360)); // 确保角度在0-360度之间
+                        }
+                        else if(abs((((angle_yaw + 360) > 360) ? angle_yaw : (angle_yaw + 360)) - start_angle) < IN_CIRCLE_ANGLE){
                             error_calculate();
-                            turn_count++;
                         }
                         else{
-//                            turn_count = 0;
-//                            is_ready_to_turn_right = 0;
-//                            start_angle = angle_yaw;
-//                            circle_state = CIRCLE_IN;
+                            start = 0;
+                            is_ready_to_turn_right = 0;
+                            circle_state = RIGHT_CIRCLE_IN;
                         }
+                    }
+                    else{
+                        is_ready_to_turn_left = 1;
+                        is_ready_to_turn_right = is_right_area();
+                    }
+                }
+            }
+            else if(right_ctn && !left_ctn) // todo find circle
+            {
+                count_left_circle = (count_left_circle + 1) % 10;
+                if(count_all == 9 && count_left_circle >= 4)
+                {
+                    count_left_circle = 0;
+                    left_circle_find = true;
+                }
+                if(left_circle_find)
+                {
+                    if(is_ready_to_turn_left){
+                        if(!start){
+                            start = 1;
+                            is_ready_to_turn_right = 0;
+                            start_angle = angle_yaw;
+                        }
+                        else if(abs((((angle_yaw + 360) > 360) ? angle_yaw : (angle_yaw + 360)) - start_angle) < IN_CIRCLE_ANGLE){
+                            error_calculate();
+                        }
+                        else{
+                            start = 0;
+                            is_ready_to_turn_left = 0;
+                            circle_state = LEFT_CIRCLE_IN;
+                        }
+                    }
+                    else{
+                        is_ready_to_turn_right = 1;
+                        is_ready_to_turn_left = is_left_area();
                     }
                 }
             }
@@ -293,21 +336,83 @@ void update_status(void) // 更新出入环状态机
                 error_calculate();
             }
             break;
-        }
-        case CIRCLE_IN:
+        }   
+        case LEFT_CIRCLE_IN:
         {
-            error_calculate();
+            if(!start){
+                start = 1;
+                start_angle = (((angle_yaw + 360) > 360) ? angle_yaw : (angle_yaw + 360));
+            }
+            else if(abs((((angle_yaw + 360) > 360) ? angle_yaw : (angle_yaw + 360)) - start_angle) < OUT_CIRCLE_ANGLE){
+                error_calculate();
+            }
+            else{
+                start = 0;
+                circle_state = LEFT_CIRCLE_OUT;
+            }
             break;
         }
-        case CIRCLE_OUT:
+
+        case RIGHT_CIRCLE_IN:
         {
-            if (IfxCpu_acquireMutex(&dspeed_mutex))
-            {
-                d_speed = -150;
-                IfxCpu_releaseMutex(&dspeed_mutex);
+            if(!start){
+                start = 1;
+                start_angle = (((angle_yaw + 360) > 360) ? angle_yaw : (angle_yaw + 360));
             }
-            if ((angle_yaw < (start_angle+3)) && (angle_yaw > (start_angle-3)))
-            {
+            else if(abs((((angle_yaw + 360) > 360) ? angle_yaw : (angle_yaw + 360)) - start_angle) < OUT_CIRCLE_ANGLE){
+                error_calculate();
+            }
+            else{
+                start = 0;
+                circle_state = RIGHT_CIRCLE_OUT;
+            }
+            break;
+        }
+
+        case RIGHT_CIRCLE_OUT:
+        {
+            if(!start){
+                start = 1;
+                start_angle = (((angle_yaw + 360) > 360) ? angle_yaw : (angle_yaw + 360));
+                is_ready_to_turn_left = 1;
+            }
+            else if(abs((((angle_yaw + 360) > 360) ? angle_yaw : (angle_yaw + 360)) - start_angle) < BACK_TO_STRAIGHT_ANGLE){
+                error_calculate();
+            }
+            else if(!start1){
+                start1 = 1;
+                start_point = encoder_distance; // 记录起始点
+                is_ready_to_turn_right = 1;
+            }
+            else if(encoder_distance - start_point < 20){
+                error_calculate();
+            }
+            else{
+                start1 = 0;
+                circle_state = CIRCLE_NOT_FIND;
+            }
+            break;
+        }
+        case LEFT_CIRCLE_OUT:
+        {
+            if(!start){
+                start = 1;
+                start_angle = (((angle_yaw + 360) > 360) ? angle_yaw : (angle_yaw + 360));
+                is_ready_to_turn_right = 1;
+            }
+            else if(abs((((angle_yaw + 360) > 360) ? angle_yaw : (angle_yaw + 360)) - start_angle) < BACK_TO_STRAIGHT_ANGLE){
+                error_calculate();
+            }
+            else if(!start1){
+                start1 = 1;
+                start_point = encoder_distance; // 记录起始点
+                is_ready_to_turn_left = 1;
+            }
+            else if(encoder_distance - start_point < 20){
+                error_calculate();
+            }
+            else{
+                start1 = 0;
                 circle_state = CIRCLE_NOT_FIND;
             }
             break;

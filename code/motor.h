@@ -21,9 +21,10 @@ typedef struct
 typedef enum
 {
         CIRCLE_NOT_FIND,
-        CIRCLE_FIND,
-        CIRCLE_IN,
-        CIRCLE_OUT,
+        LEFT_CIRCLE_IN,
+        RIGHT_CIRCLE_IN,
+        LEFT_CIRCLE_OUT,
+        RIGHT_CIRCLE_OUT
 } CIRCLE_STATE;
 typedef enum
 {

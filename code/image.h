@@ -41,6 +41,7 @@ extern bool find_circle_area(void);
 extern int16 limit_a_b(int16 x, int16 a, int16 b);
 extern void error_calculate(void);
 extern bool is_right_area(void);
+extern bool is_left_area(void);
 //---------data declaration------------
 extern IfxCpu_mutexLock screen_mutex;
 extern IfxCpu_mutexLock param_mutex;

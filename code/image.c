@@ -216,17 +216,10 @@ void turn_to_bin(void)
     {
         for (j = 0; j < image_w; j++)
         {
-            if(is_ready_to_turn_right && i < image_h && j < image_w / 2)
-                bin_image[i][j] = black_pixel;
-            else if(is_ready_to_turn_left){
-
-            }
-            else{
-                if (original_image[i][j] > image_thereshold)
+            if (original_image[i][j] > image_thereshold)
                     bin_image[i][j] = white_pixel;
                 else
                     bin_image[i][j] = black_pixel;
-            }
         }
     }
 }
@@ -890,7 +883,7 @@ bool find_circle(uint8 *image)
 }
 
 bool circle_flag = false; // 是否找到环岛
-float thre = 15; //标准差阈值
+float thre = 20; //标准差阈值
 //判断左边界是不是直道
 bool left_continue(void)
 {
@@ -983,17 +976,56 @@ bool find_circle_area(void)
     }
 }
 
-int a = image_h * 5/ 12;
-int b = image_w / 2;
+int y1 = 53;
+int y2 = 67;
+int turn_thre = 5;
 
 bool is_right_area(void){
-    int result1 = 0;
-    for(int i = 0; i < a; i++){
-        for(int j = 0; j < b; j++){
-            result1 += ((bin_image[image_h - a + i][image_w - b + j] == 255) ? 1 : 0);
-        }
+    int x1 = 0;
+    int x2 = 0;
+    int points_got =0;
+    for (int i = 0; i < data_stastics_r; i++)
+    {
+       if(trans_r[i][1] == y1 && points_got != 1)
+       {
+           x1 = trans_r[i][0];
+           points_got = (points_got == 0) ? 1 : 3;
+       }
+
+       else if(trans_r[i][1] == y2 && points_got != 2)
+       {
+           x2 = trans_r[i][0];
+           points_got = (points_got == 0) ? 2 : 3;
+       }
+
+       else if(points_got == 3)
+           break;
     }
-    return ((result1 >= (a * b * 85 / 100)) ? 1 : 0);
+    return ((x2 - x1) >= turn_thre ? 1 : 0);
+}
+
+bool is_left_area(void){
+    int x1 = 0;
+    int x2 = 0;
+    int points_got =0;
+    for (int i = 0; i < data_stastics_l; i++)
+    {
+       if(trans_l[i][1] == y1 && points_got != 1)
+       {
+           x1 = trans_l[i][0];
+           points_got = (points_got == 0) ? 1 : 3;
+       }
+
+       else if(trans_l[i][1] == y2 && points_got != 2)
+       {
+           x2 = trans_l[i][0];
+           points_got = (points_got == 0) ? 2 : 3;
+       }
+
+       else if(points_got == 3)
+           break;
+    }
+    return ((x1 - x2) >= turn_thre ? 1 : 0);
 }
 /*---------------------------------------
 函数名称：error_calculate(void)
@@ -1198,7 +1230,15 @@ void image_process(void)
         {
             if (((l_border[i] > 5) && (r_border[i] < 180))) // ||my_abs((l_border[i]-r_border[i]) > 10))//避免回头弯中线求错
             {
-                center_line[i] = (l_border[i] + r_border[i]) >> 1; // 均分求中线
+                if(is_ready_to_turn_right){
+                    center_line[i] = r_border[i] + (image_w - r_border[5]);
+                }
+                else if(is_ready_to_turn_left){
+                    center_line[i] = l_border[i] + (image_w - l_border[5]);
+                }
+                else {
+                    center_line[i] = (l_border[i] + r_border[i]) >> 1; // 均分求中线
+                }
             }
         }
     }

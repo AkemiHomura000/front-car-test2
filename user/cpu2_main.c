@@ -70,8 +70,8 @@ void screen_show(void)
     ips200_show_int(50, 270, right_ctn, 3);
 
     ips200_show_string(0, 250, "circle");
-    ips200_show_int(140, 250, right_circle_find, 3);
-    ips200_show_int(160, 250, is_ready_to_turn_right, 3);
+    ips200_show_int(140, 250, left_circle_find, 3);
+    ips200_show_int(160, 250, is_ready_to_turn_left, 3);
 
     // ips200_show_string(0, 250, "ifcirc:");
     // if (xflg_now > 3) // xflg_now>3即三次连续超标，表明底线丢线
