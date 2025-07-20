@@ -1231,10 +1231,10 @@ void image_process(void)
             if (((l_border[i] > 5) && (r_border[i] < 180))) // ||my_abs((l_border[i]-r_border[i]) > 10))//避免回头弯中线求错
             {
                 if(is_ready_to_turn_right){
-                    center_line[i] = r_border[i] + (image_w - r_border[5]);
+                    center_line[i] = r_border[i] + (image_w / 2 - r_border[5]);
                 }
                 else if(is_ready_to_turn_left){
-                    center_line[i] = l_border[i] + (image_w - l_border[5]);
+                    center_line[i] = l_border[i] + (image_w / 2 - l_border[5]);
                 }
                 else {
                     center_line[i] = (l_border[i] + r_border[i]) >> 1; // 均分求中线
