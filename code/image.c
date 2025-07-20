@@ -1226,15 +1226,31 @@ void image_process(void)
         left_ctn = left_continue();
         right_ctn = right_continue();
         // 求中线
+        bool a = 0;
+        int diff_mid = 0;
         for (int i = image_h - lowest; i > hightest; i--) // 从图底向上求
         {
             if (((l_border[i] > 5) && (r_border[i] < 180))) // ||my_abs((l_border[i]-r_border[i]) > 10))//避免回头弯中线求错
             {
                 if(is_ready_to_turn_right){
-                    center_line[i] = r_border[i] + (image_w / 2 - r_border[5]);
+                    if(!a){
+                        diff_mid = my_abs(r_border[i] - image_w / 2);
+                        a = 1;
+                        center_line[i] = image_w / 2;
+                    }
+                    else{
+                        center_line[i] = r_border[i] - diff_mid;
+                    }
                 }
                 else if(is_ready_to_turn_left){
-                    center_line[i] = l_border[i] + (image_w / 2 - l_border[5]);
+                    if(!a){
+                        diff_mid = my_abs(l_border[i] - image_w / 2);
+                        a = 1;
+                        center_line[i] = image_w / 2;
+                    }
+                    else{
+                        center_line[i] = l_border[i] + diff_mid;
+                    }
                 }
                 else {
                     center_line[i] = (l_border[i] + r_border[i]) >> 1; // 均分求中线
