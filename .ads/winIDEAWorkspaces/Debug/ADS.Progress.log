@@ -13,6 +13,4 @@ SoC	Detected device: TC370 series, rev. AA
 EMULATION	STARTED
 PROGRAMMING 	110945 bytes
 PROGRAMMING	Infineon TC37x_PFLASH_6MB (10 sectors)
-SoC	Detected device: TC100 series, rev. AA
-SoC	SMP requirements not satisfied. Check multi-core synchronization settings.
-EMULATION	END - Not attempting cleanup
+EMULATION	END - Without cleanup
