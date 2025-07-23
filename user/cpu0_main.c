@@ -69,35 +69,4 @@ int core0_main(void) // 负责视觉处理
 }
 #pragma section all restore
 // **************************** 代码区域 ****************************
-void circle_run(void)//惯导关视觉
-{
-    //停滞关闭视觉处理
 
-    //环前直行
-//    while(!IfxCpu_acquireMutex(&dspeed_mutex));
-    if (IfxCpu_acquireMutex(&dspeed_mutex))
-    {
-        d_speed = 0;
-        IfxCpu_releaseMutex(&dspeed_mutex);
-    }
-    system_delay_ms(100);
-    //环中绕行
-//    while(!IfxCpu_acquireMutex(&dspeed_mutex));
-    if (IfxCpu_acquireMutex(&dspeed_mutex))
-    {
-        d_speed = -180;
-        IfxCpu_releaseMutex(&dspeed_mutex);
-    }
-    float yaw_in = get_angle();
-    system_delay_ms(1000);
-    while((angle_yaw > (yaw_in+1)) || (angle_yaw < (yaw_in-1)));
-    //环后直行
-//    while(!IfxCpu_acquireMutex(&dspeed_mutex));
-    if (IfxCpu_acquireMutex(&dspeed_mutex))
-    {
-        d_speed = 0;
-        IfxCpu_releaseMutex(&dspeed_mutex);
-    }
-    system_delay_ms(1000);
-    //开启视觉处理中断
-}

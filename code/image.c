@@ -855,178 +855,63 @@ void draw_circle_range_line(uint8 *image)
  * @param image
  */
 bool img_update;
-bool find_circle(uint8 *image)
-{
-    bool find_circle = false;
-    for (int y = TU_CIRCLE_Y_MIN; y < TU_CIRCLE_Y_MAX; y++)
-    {
-        for (int x = 0; x < image_w; x++)
-        {
-            if (image[y * image_w + x] == 0)
-            {
-                int sum_x = 0, sum_y = 0, count = 0;
-                int x_min = 0, x_max = 0, y_min = 0, y_max = 0;
-                bfs(image, x, y, &sum_x, &sum_y, &count, &x_min, &x_max, &y_min, &y_max);
-                if (count != 0)
-                if (count > TU_MIN_CIRCLE_COUNT && count < TU_MAX_CIRCLE_COUNT)
-                {
-                    // printf("count=%d\n", count);
-                    int center_x = sum_x / count;
-                    int center_y = sum_y / count;
-                    draw_box(image, x_min, x_max, y_min, y_max); // 画框
-                    find_circle = true;
-                }
-            }
-        }
-    }
-    return find_circle;
-}
 
 bool circle_flag = false; // 是否找到环岛
-float thre = 20; //标准差阈值
+int distance_l = 0; // 左边距离
+int distance_r = 0; // 右边距离
+int d_x = 5;
+
 //判断左边界是不是直道
 bool left_continue(void)
 {
-    int sum = 0;
-    int count = 0;
-    for (int i = 0; i < data_stastics_l; i++)
+    for (int i = data_stastics_l; i > d_x * 2; i--)
     {
-        if(trans_l[i][1] >= 10 && trans_l[i][1] <= 60)
+        if(trans_l[i][1] >= 30 && trans_l[i][1] <= 90)
         {
-            sum += trans_l[i][0];
-            count++;
+            int d_y1 = abs(trans_l[i][1] - trans_l[i - d_x][1]);
+            int d_y2 = abs(trans_l[i - d_x][1] - trans_l[i - 2 * d_x][1]);
+            int d_x1 = abs(trans_l[i][0] - trans_l[i - d_x][0]);
+            int d_x2 = abs(trans_l[i - d_x][0] - trans_l[i - 2 * d_x][0]);
+
+            if((d_y1 <= d_x1) && (d_y2 <= d_x2)){
+                distance_l = trans_l[i][1];
+                return false; // 左边界不是直道
+            }
+            else
+            {
+                distance_l = 0;
+                return true; // 左边界是直道
+            }
+
         }
     }
-    float average = sum / count;
-    sum = 0;
-    for (int i = 0; i < data_stastics_l; i++)
-    {
-        if(trans_l[i][1] >= 10 && trans_l[i][1] <= 60)
-        {
-            sum += (trans_l[i][0] - average) * (trans_l[i][0] - average);
-        }
-    }
-    sum /= count;
-    float std = sqrt(sum);
-    return (std > thre ? 0 : 1);
 }
 
 bool right_continue(void)
 {
-    int sum = 0;
-    int count = 0;
-    for (int i = 0; i < data_stastics_r; i++)
+    for (int i = data_stastics_r; i > d_x * 2; i--)
     {
-        if(trans_r[i][1] >= 15 && trans_r[i][1] <= 60)
+        if(trans_r[i][1] >= 30 && trans_r[i][1] <= 90)
         {
-            sum += trans_r[i][0];
-            count++;
-        }
-    }
-    float average = sum / count;
-    sum = 0;
-    for (int i = 0; i < data_stastics_r; i++)
-    {
-        if(trans_r[i][1] >= 15 && trans_r[i][1] <= 60)
-        {
-            sum += (trans_r[i][0] - average) * (trans_r[i][0] - average);
-        }
-    }
-    sum /= count;
-    float std = sqrt(sum);
-    return (std > thre ? 0 : 1);
-}
+            int d_y1 = abs(trans_r[i][1] - trans_r[i - d_x][1]);
+            int d_y2 = abs(trans_r[i - d_x][1] - trans_r[i - 2 * d_x][1]);
+            int d_x1 = abs(trans_r[i][0] - trans_r[i - d_x][0]);
+            int d_x2 = abs(trans_r[i - d_x][0] - trans_r[i - 2 * d_x][0]);
 
-bool find_circle_area(void)
-{
-    if (img_update)
-    {
-        // 把mt9v03x_image二值化后并保存到bin_image_circlr，此处手动设置阈值
-        
-        for (int i = 0; i < image_h; i++)
-        {
-            for (int j = 0; j < image_w; j++)
-            {
-                bin_image_circlr[i][j] = bin_image[i][j];
+            if((d_y1 <= d_x1) && (d_y2 <= d_x2)){
+                distance_r = trans_r[i][1];
+                return false; // 左边界不是直道
             }
-        }
-        bool find = find_circle(bin_image_circlr[0]);
-        img_update = false;
-        if (find)
-        {
-            circle_flag = true;
-            return true;
-        }
-        else
-        {
-            circle_flag = false;
-            return false;
-        }
-    }
-    else
-    {
-        if (circle_flag)
-        {
-            return true;
-        }
-        else
-        {
-            return false;
+            else
+            {
+                distance_r = 0;
+                return true; // 左边界是直道
+            }
+
         }
     }
 }
 
-int y1 = 53;
-int y2 = 67;
-int turn_thre = 5;
-
-bool is_right_area(void){
-    int x1 = 0;
-    int x2 = 0;
-    int points_got =0;
-    for (int i = 0; i < data_stastics_r; i++)
-    {
-       if(trans_r[i][1] == y1 && points_got != 1)
-       {
-           x1 = trans_r[i][0];
-           points_got = (points_got == 0) ? 1 : 3;
-       }
-
-       else if(trans_r[i][1] == y2 && points_got != 2)
-       {
-           x2 = trans_r[i][0];
-           points_got = (points_got == 0) ? 2 : 3;
-       }
-
-       else if(points_got == 3)
-           break;
-    }
-    return ((x2 - x1) >= turn_thre ? 1 : 0);
-}
-
-bool is_left_area(void){
-    int x1 = 0;
-    int x2 = 0;
-    int points_got =0;
-    for (int i = 0; i < data_stastics_l; i++)
-    {
-       if(trans_l[i][1] == y1 && points_got != 1)
-       {
-           x1 = trans_l[i][0];
-           points_got = (points_got == 0) ? 1 : 3;
-       }
-
-       else if(trans_l[i][1] == y2 && points_got != 2)
-       {
-           x2 = trans_l[i][0];
-           points_got = (points_got == 0) ? 2 : 3;
-       }
-
-       else if(points_got == 3)
-           break;
-    }
-    return ((x1 - x2) >= turn_thre ? 1 : 0);
-}
 /*---------------------------------------
 函数名称：error_calculate(void)
 功能说明：计算原始误差，并计算左右轮参数

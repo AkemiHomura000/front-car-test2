@@ -259,6 +259,7 @@ bool is_ready_to_turn_left = 0; // 是否准备转向右环岛
 bool start = false;
 bool start1 = false;
 float start_point = 0.0; // 起始点
+int dis_want = 0; // 需要的距离
 #define IN_CIRCLE_ANGLE 40.0                 // 进入环岛的角度
 #define OUT_CIRCLE_ANGLE 300.0 // 出环岛角度
 #define BACK_TO_STRAIGHT_ANGLE 20.0 // 回正角度
@@ -272,8 +273,8 @@ void update_status(void) // 更新出入环状态机
             count_all = (count_all + 1) % 10;
             if (left_ctn && !right_ctn) // todo find circle
             {
-                count_right_circle = (count_right_circle + 1) % 10;
-                if(count_all == 9 && count_right_circle >= 4)
+                count_right_circle = (count_right_circle + 1) % 5;
+                if(count_all == 4 && count_right_circle >= 3)
                 {
                     count_right_circle = 0;
                     right_circle_find = true;
@@ -296,15 +297,40 @@ void update_status(void) // 更新出入环状态机
                         }
                     }
                     else{
-                        is_ready_to_turn_left = 1;
-                        is_ready_to_turn_right = is_right_area();
+                        if(!start){
+                            start_point = encoder_distance; // 记录起始点
+                            is_ready_to_turn_left = 1;
+                            dis_want = distance_r;
+                            start = 1;
+                        }
+                        else{
+                            if(encoder_distance - start_point < dis_want){
+                                error_calculate();
+                            }
+                            else{
+                                if(!start1){
+                                    start_point = encoder_distance; // 记录起始点
+                                    dis_want = distance_r;
+                                    start1 = 1;
+                                }
+                                else if(encoder_distance - start_point < dis_want){
+                                    error_calculate();
+                                }
+                                else{
+                                    start1 = 0;
+                                    start = 0;
+                                    is_ready_to_turn_right = 1;
+                                    is_ready_to_turn_left = 0;
+                                }
+                            }
+                        }
                     }
                 }
             }
             else if(right_ctn && !left_ctn) // todo find circle
             {
-                count_left_circle = (count_left_circle + 1) % 10;
-                if(count_all == 9 && count_left_circle >= 4)
+                count_left_circle = (count_left_circle + 1) % 5;
+                if(count_all == 4 && count_left_circle >= 3)
                 {
                     count_left_circle = 0;
                     left_circle_find = true;
@@ -314,8 +340,8 @@ void update_status(void) // 更新出入环状态机
                     if(is_ready_to_turn_left){
                         if(!start){
                             start = 1;
-                            is_ready_to_turn_right = 0;
-                            start_angle = angle_yaw;
+                            is_ready_to_turn_left = 0;
+                            start_angle = (((angle_yaw + 360) > 360) ? angle_yaw : (angle_yaw + 360)); // 确保角度在0-360度之间
                         }
                         else if(abs((((angle_yaw + 360) > 360) ? angle_yaw : (angle_yaw + 360)) - start_angle) < IN_CIRCLE_ANGLE){
                             error_calculate();
@@ -327,8 +353,33 @@ void update_status(void) // 更新出入环状态机
                         }
                     }
                     else{
-                        is_ready_to_turn_right = 1;
-                        is_ready_to_turn_left = is_left_area();
+                        if(!start){
+                            start_point = encoder_distance; // 记录起始点
+                            is_ready_to_turn_right = 1;
+                            dis_want = distance_l;
+                            start = 1;
+                        }
+                        else{
+                            if(encoder_distance - start_point < dis_want){
+                                error_calculate();
+                            }
+                            else{
+                                if(!start1){
+                                    start_point = encoder_distance; // 记录起始点
+                                    dis_want = distance_l;
+                                    start1 = 1;
+                                }
+                                else if(encoder_distance - start_point < dis_want){
+                                    error_calculate();
+                                }
+                                else{
+                                    start1 = 0;
+                                    start = 0;
+                                    is_ready_to_turn_left = 1;
+                                    is_ready_to_turn_right = 0;
+                                }
+                            }
+                        }
                     }
                 }
             }

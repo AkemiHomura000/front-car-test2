@@ -44,19 +44,7 @@
 // 本例程是开源库空工程 可用作移植或者测试各类内外设
 
 // **************************** 代码区域 ****************************
-// void show_star(uint8 x, uint8 y)
-//{
-//    if ((x > 0) && (x < ips200_width_max-1) && (y > 0) && (y < ips200_height_max-1))
-//    ips200_draw_point((uint16)x, (uint16)y, uesr_GREEN);
-//    if ((x > -1) && ((x+2) < ips200_width_max) && (y > 0) && (y < ips200_height_max-1))
-//    ips200_draw_point((uint16)x + 1, (uint16)y, uesr_GREEN);
-//    if ((x > 0) && (x < ips200_width_max-1) && (y > -1) && ((y+2) < ips200_height_max))
-//    ips200_draw_point((uint16)x, (uint16)y + 1, uesr_GREEN);
-//    if ((x > 1) && ((x) < ips200_width_max) && (y > 0) && (y < ips200_height_max-1))
-//    ips200_draw_point((uint16)x - 1, (uint16)y, uesr_GREEN);
-//    if ((x > 0) && (x < ips200_width_max-1) && (y > 1) && (y < ips200_height_max))
-//    ips200_draw_point((uint16)x, (uint16)y - 1, uesr_GREEN);
-//}
+
 void screen_show(void)
 {
     // 此处展示屏幕
@@ -69,20 +57,9 @@ void screen_show(void)
     ips200_show_string(0, 270, "right:");
     ips200_show_int(50, 270, right_ctn, 3);
 
-    ips200_show_string(0, 250, "circle");
-    ips200_show_int(140, 250, left_circle_find, 3);
-    ips200_show_int(160, 250, is_ready_to_turn_left, 3);
+    ips200_show_int(140, 250, distance_l, 3);
+    ips200_show_int(160, 250, distance_r, 3);
 
-    // ips200_show_string(0, 250, "ifcirc:");
-    // if (xflg_now > 3) // xflg_now>3即三次连续超标，表明底线丢线
-    // {
-    //     ips200_show_string(100, 250, "losfoot");
-    // }
-    // else
-    // {
-    //     // 底边未丢线，分辨前方是否出现丢线
-    //     ips200_show_string(100, 250, "getfoot");
-    // }
 
     ips200_draw_line(0 + image_xmove, (uint16)hightest, image_w + image_xmove, (uint16)hightest, RGB565_RED);                             // 图片处理最高处（1）
     ips200_draw_line(0 + image_xmove, (uint16)hightest + 125, image_w + image_xmove, (uint16)hightest + 125, RGB565_RED);                 // 最高处（2）
